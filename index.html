@@ -1,0 +1,2679 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Allures">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<title>Disque des Allures — NMEA Live V3.2</title>
+<style>
+:root{--bg:#060d18;--bg1:#0a1726;--bg2:#0d1e30;--bg3:#101f35;--border:rgba(255,255,255,0.07);--brd2:rgba(255,255,255,0.13);--txt:#ddeeff;--txt2:#8aa8c8;--txt3:#4a6a8a;--blue:#2d7dd2;--blue2:#1a5fa8;--green:#1fad6b;--orange:#e07020;--red:#d03030;--live:#00e676;--wc:#4da8ff;--bc:#2de88a;--r:14px;--sh:0 4px 24px rgba(0,0,0,0.5);}
+/* ── LIGHT THEME ── */
+body.light{
+  /* Backgrounds : gris bleu très clair, carte blanche, légère séparation */
+  --bg:#dfe6f0;--bg1:#ffffff;--bg2:#f0f5fb;--bg3:#e2eaf4;
+  --border:rgba(0,40,100,0.12);--brd2:rgba(0,40,100,0.20);
+  /* Textes : bleu marine foncé pour le principal, gris bleu pour les labels */
+  --txt:#0a1628;--txt2:#2c4a70;--txt3:#6a85a8;
+  /* Accents : bleu vif pour le vent, violet pour le cap (bien distinct du vert) */
+  --blue:#1356b4;--blue2:#0c3d82;
+  --green:#0e7c3a;           /* utilisé sparingly, jamais sur fond vert */
+  --orange:#c45000;--red:#b71c1c;
+  --live:#007a38;
+  /* vent = bleu cobalt, cap = violet aubergine (aucune confusion possible) */
+  --wc:#1356b4;--bc:#6d28d9;
+  --sh:0 2px 12px rgba(0,40,100,0.10);
+}
+/* Topbar claire */
+body.light .topbar{background:rgba(212,225,242,0.98);border-bottom:1px solid rgba(0,40,100,0.14);}
+body.light .topbar-title{color:#1a3050;}
+body.light .topbar-title span{color:#0a1628;}
+body.light .topbar-settings-btn{background:rgba(0,40,100,0.08);border-color:rgba(0,40,100,0.20);color:#2c4a70;}
+body.light .topbar-settings-btn:hover{background:rgba(0,40,100,0.14);color:#0a1628;}
+body.light .topbar-settings-btn.open{background:rgba(19,86,180,0.14);border-color:#1356b4;color:#1356b4;}
+/* Badges sources dans la topbar */
+body.light .topbar-src.wind{background:#dbeafe;border:1px solid #93c5fd;color:#1356b4;}
+body.light .topbar-src.boat{background:#ede9fe;border:1px solid #c4b5fd;color:#6d28d9;}
+/* Inputs */
+body.light input[type=text],body.light input[type=number]{color:#0a1628;background:#fff;border-color:rgba(0,40,100,0.22);}
+body.light input[type=range]{accent-color:#1356b4;}
+/* Boutons */
+body.light .btn-manual{background:#e2eaf4;color:#2c4a70;border:1px solid rgba(0,40,100,0.20);}
+body.light .btn-connect{background:#1356b4;color:#fff;}
+/* Sélecteurs NMEA */
+body.light .sel-btn{background:#e2eaf4;color:#2c4a70;border-color:rgba(0,40,100,0.18);}
+body.light .sel-btn.aw{background:#dbeafe;border-color:#93c5fd;color:#1356b4;}
+body.light .sel-btn.ab{background:#ede9fe;border-color:#c4b5fd;color:#6d28d9;}
+/* Boutons source NMEA dans les tuiles */
+body.light .src-btn{background:#e2eaf4;color:#6a85a8;border-color:rgba(0,40,100,0.15);}
+body.light .src-btn.src-active-nmea-wind{background:#dbeafe;border-color:#93c5fd;color:#1356b4;}
+body.light .src-btn.src-active-nmea-boat{background:#ede9fe;border-color:#c4b5fd;color:#6d28d9;}
+body.light .src-btn.src-active-manual{background:#fef3c7;border-color:#fcd34d;color:#92400e;}
+body.light .src-btn.src-validate{background:#dcfce7;color:#166534;border-color:#86efac;}
+/* Statuts src */
+body.light .src-status.ok{background:#dcfce7;color:#166534;}
+body.light .src-status.wait{background:#fef3c7;color:#92400e;}
+body.light .src-status.manual{background:#fef3c7;color:#92400e;}
+/* Tiles : bordure top colorée reste, fond blanc pur */
+body.light .tile{background:#ffffff;border-color:rgba(0,40,100,0.12);}
+body.light .tile-val{color:#0a1628;}
+body.light .tile-val.tw{color:#1356b4;}
+body.light .tile-val.bk{color:#6d28d9;}
+body.light .tile-lbl{color:#6a85a8;}
+body.light .tile-sub{color:#6a85a8;}
+/* Baro */
+body.light .baro-val{color:#7b1fa2;}
+body.light .baro-trend.rising{color:#166534;}
+body.light .baro-trend.falling{color:#b71c1c;}
+/* Profondeur */
+body.light .depth-margin.ok{color:#166534;}
+body.light .depth-margin.warn{color:#c45000;}
+body.light .depth-margin.danger{color:#b71c1c;}
+body.light .depth-alert-btn.active{background:#dcfce7;border-color:#86efac;color:#166534;}
+/* BFT badge */
+body.light .bft-badge{background:#dbeafe;color:#1356b4;border-color:#93c5fd;}
+/* Live badge */
+body.light .live-badge{background:#dcfce7;color:#166534;border-color:#86efac;}
+/* TWA badge */
+body.light .twa-badge{background:#fff;border-color:rgba(0,40,100,0.15);}
+body.light .twa-val{color:#c45000;}
+body.light .twa-side.tribord{color:#0a6632;font-weight:900;}
+body.light .twa-side.babord{color:#900000;font-weight:900;}
+/* Nord box */
+body.light .nord-box{background:#f0f5fb;border-color:rgba(0,40,100,0.12);}
+body.light .nord-label{color:#6a85a8;}
+body.light .nord-src-btn{background:#e2eaf4;color:#2c4a70;border-color:rgba(0,40,100,0.18);}
+body.light .nord-src-btn.active-manual{background:#dbeafe;border-color:#93c5fd;color:#1356b4;}
+body.light .nord-src-btn.active-sensor{background:#fee2e2;border-color:#fca5a5;color:#b71c1c;}
+body.light .compass-rot-val{color:#b71c1c;}
+body.light .btn-nord{background:rgba(183,28,28,0.08);border-color:rgba(183,28,28,0.25);color:#b71c1c;}
+/* Settings */
+body.light .settings-panel{background:#f0f5fb;border-color:rgba(0,40,100,0.15);}
+body.light .settings-section-title{color:#6a85a8;border-color:rgba(0,40,100,0.12);}
+body.light .sel-box{background:#e2eaf4;border-color:rgba(0,40,100,0.12);}
+/* Speed pairs */
+body.light .speed-divider{background:rgba(0,40,100,0.15);}
+/* Sail panel */
+body.light .sail-panel{background:#fff;border-color:rgba(0,40,100,0.12);}
+body.light .sail-panel-title{color:#6a85a8;border-color:rgba(0,40,100,0.10);}
+body.light .allure-reglage{background:rgba(0,40,100,0.05);color:#2c4a70;}
+/* Pénons */
+body.light .penon-box{background:#fff;border-color:rgba(0,40,100,0.12);}
+body.light .penon-title{color:#6a85a8;}
+body.light .penon-case.ok{background:#f0fdf4;border-color:#86efac;}
+body.light .penon-case.ok .penon-state{color:#166534;}
+body.light .penon-case.ext{background:#fff7ed;border-color:#fdba74;}
+body.light .penon-case.ext .penon-state{color:#c45000;}
+body.light .penon-case.int{background:#fff1f2;border-color:#fda4af;}
+body.light .penon-case.int .penon-state{color:#b71c1c;}
+body.light .penon-action{color:#2c4a70;}
+body.light .penon-action strong{color:#0a1628;}
+/* Log */
+body.light .log-box{background:#f0f5fb;border-color:rgba(0,40,100,0.12);}
+body.light .log-title{color:#6a85a8;}
+body.light #log-content{color:#2c4a70;}
+/* Theme button */
+body.light .theme-toggle-btn{background:rgba(0,40,100,0.08);border-color:rgba(0,40,100,0.20);}
+body.light .theme-toggle-btn:hover{background:rgba(0,40,100,0.15);}
+/* smooth transitions on theme switch */
+body,body *{transition:background-color .25s,border-color .2s,color .2s,box-shadow .2s;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--txt);display:flex;flex-direction:column;align-items:center;gap:8px;padding:0 0 calc(60px + env(safe-area-inset-bottom));min-height:100vh;padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);}
+.topbar{position:sticky;top:0;z-index:100;width:100%;background:rgba(4,10,20,0.97);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:10px;backdrop-filter:blur(8px);}
+.topbar-title{font-size:12px;font-weight:700;color:var(--txt2);letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;flex:1;}
+.topbar-title span{color:#fff;}align-items:center;gap:6px;flex-shrink:0;}
+.topbar-src{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:5px;font-size:10px;font-weight:700;letter-spacing:.06em;}
+.topbar-src.wind{background:rgba(45,125,210,0.25);border:1px solid rgba(45,125,210,0.4);color:var(--wc);}
+.topbar-src.boat{background:rgba(31,173,107,0.2);border:1px solid rgba(31,173,107,0.35);color:var(--bc);}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--txt3);flex-shrink:0;}
+.status-dot.connecting{background:var(--orange);animation:blink 1s infinite;}
+.status-dot.connected{background:var(--live);}
+.status-dot.error{background:var(--red);}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+.topbar-settings-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;background:rgba(255,255,255,0.06);border:1px solid var(--brd2);color:var(--txt2);font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0;}
+.topbar-settings-btn:hover{background:rgba(255,255,255,.1);color:#fff;}
+.topbar-settings-btn.open{background:rgba(45,125,210,.2);border-color:var(--blue);color:var(--wc);}
+.topbar-chevron{transition:transform .25s;display:inline-block;font-style:normal;}
+.topbar-chevron.open{transform:rotate(180deg);}
+/* ── Theme toggle button ── */
+.theme-toggle-btn{
+  display:flex;align-items:center;justify-content:center;
+  width:34px;height:34px;border-radius:10px;
+  background:rgba(255,255,255,0.08);border:1px solid var(--brd2);
+  font-size:16px;cursor:pointer;transition:all .2s;flex-shrink:0;
+  line-height:1;padding:0;
+}
+.theme-toggle-btn:hover{background:rgba(255,255,255,0.15);transform:scale(1.08);}
+body.light .theme-toggle-btn{background:rgba(0,50,120,0.08);border-color:rgba(0,50,120,0.18);}
+body.light .theme-toggle-btn:hover{background:rgba(0,50,120,0.15);}
+.settings-panel{width:100%;max-width:1000px;background:var(--bg2);border:1px solid var(--brd2);border-radius:var(--r);padding:16px;box-shadow:var(--sh);display:none;flex-direction:column;gap:14px;animation:slideDown .2s ease;margin:0 8px;}
+.settings-panel.open{display:flex;}
+@keyframes slideDown{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+.settings-section{display:flex;flex-direction:column;gap:8px;}
+.settings-section-title{font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.08em;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.conn-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.conn-row label{font-size:11px;color:var(--txt2);white-space:nowrap;}
+input[type=text]{flex:1;min-width:120px;padding:7px 10px;border:1px solid var(--brd2);border-radius:8px;font-size:16px;color:#fff;outline:none;background:var(--bg1);}
+input[type=text]:focus{border-color:var(--blue);background:var(--bg3);}
+.btn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .15s;white-space:nowrap;}
+.btn-connect{background:var(--blue);color:#fff;}
+.btn-manual{background:var(--bg3);color:var(--txt2);border:1px solid var(--brd2);}
+.status-row{display:flex;align-items:center;gap:8px;margin-top:2px;}
+.status-dot-inline{width:8px;height:8px;border-radius:50%;background:var(--txt3);flex-shrink:0;}
+.status-txt{font-size:11px;color:var(--txt2);}
+.sel-grid{display:flex;gap:8px;flex-wrap:wrap;}
+.sel-box{flex:1;min-width:180px;background:var(--bg1);border:1px solid var(--border);border-radius:10px;padding:10px 12px;}
+.sel-title{font-size:10px;font-weight:700;color:var(--txt2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;}
+.sel-btn{display:inline-block;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid var(--brd2);background:var(--bg3);color:var(--txt2);margin:2px;transition:all .15s;}
+.sel-btn.aw{background:rgba(45,125,210,.3);border-color:var(--blue);color:var(--wc);}
+.sel-btn.ab{background:rgba(31,173,107,.25);border-color:var(--green);color:var(--bc);}
+.sel-desc{font-size:9px;color:var(--txt3);margin-top:5px;}
+.draft-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.draft-row label{font-size:11px;color:var(--txt2);white-space:nowrap;}
+input.draft-input{width:80px;flex:none;padding:7px 8px;border:1px solid var(--brd2);border-radius:8px;font-size:14px;font-weight:700;color:var(--wc);text-align:center;outline:none;background:var(--bg1);}
+.draft-badge{padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;background:rgba(45,125,210,.15);color:var(--wc);border:1px solid rgba(45,125,210,.2);white-space:nowrap;}
+.engine-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.engine-item{display:flex;flex-direction:column;align-items:center;background:var(--bg1);border:1px solid var(--border);border-radius:10px;padding:8px 14px;min-width:110px;}
+.engine-item-label{font-size:9px;color:var(--txt3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;}
+.engine-item-val{font-size:18px;font-weight:700;color:var(--txt2);}
+.engine-item-val.live{color:var(--orange);}
+.engine-item-sub{font-size:9px;color:var(--txt3);margin-top:1px;}
+.live-badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700;background:rgba(0,230,118,.15);color:var(--live);border:1px solid rgba(0,230,118,.25);margin-left:4px;vertical-align:middle;}
+/* Dashboard */
+.main-layout{width:100%;max-width:1200px;display:grid;grid-template-columns:280px auto 1fr;gap:10px;padding:0 8px;align-items:start;}
+.left-col{display:flex;flex-direction:column;gap:8px;min-width:0;}
+.center-col{display:flex;flex-direction:column;align-items:center;gap:0;}
+.center-col canvas{touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;cursor:grab;border-radius:50%;box-shadow:0 0 0 2px rgba(45,125,210,.15),0 8px 40px rgba(0,0,0,.6);}
+canvas{touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;cursor:grab;border-radius:50%;box-shadow:0 0 0 2px rgba(45,125,210,.15),0 8px 40px rgba(0,0,0,.6);}
+canvas:active{cursor:grabbing;}
+.twa-badge{display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--brd2);border-radius:12px;padding:8px 16px;width:100%;}
+.twa-val{font-size:28px;font-weight:700;color:var(--orange);line-height:1;}
+.twa-sub{font-size:9px;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;}
+.twa-side{font-size:13px;font-weight:700;}
+.twa-side.tribord{color:var(--green);}
+.twa-side.babord{color:var(--red);}
+.nord-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;width:100%;}
+.nord-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;}
+.nord-label{font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;white-space:nowrap;}
+.nord-src-group{display:flex;gap:5px;}
+.nord-src-btn{padding:4px 10px;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid var(--brd2);background:var(--bg3);color:var(--txt2);transition:all .15s;}
+.nord-src-btn.active-manual{background:rgba(45,125,210,.25);border-color:var(--blue);color:var(--wc);}
+.nord-src-btn.active-sensor{background:rgba(208,48,48,.25);border-color:var(--red);color:#ff7070;}
+.compass-rot-val{font-size:13px;font-weight:700;color:var(--red);min-width:55px;text-align:center;}
+.sensor-status{font-size:10px;padding:3px 8px;border-radius:6px;font-weight:600;}
+.sensor-status.ok{background:rgba(31,173,107,.2);color:var(--bc);}
+.sensor-status.wait{background:rgba(224,112,32,.2);color:var(--orange);}
+.sensor-status.err{background:rgba(208,48,48,.2);color:var(--red);}
+.compass-rot-manual{display:flex;align-items:center;gap:8px;}
+.compass-rot-manual input[type=range]{flex:1;accent-color:var(--red);}
+.btn-nord{padding:4px 9px;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid rgba(208,48,48,.3);background:rgba(208,48,48,.1);color:var(--red);}
+/* Data grid */
+.data-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;min-width:0;}
+.tile{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;display:flex;flex-direction:column;gap:4px;position:relative;overflow:hidden;}
+.tile::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0;}
+.tile.tw::after{background:var(--wc);}
+.tile.bk::after{background:var(--bc);}
+.tile.sp::after{background:var(--orange);}
+.tile.dp::after{background:var(--blue);}
+.tile.br::after{background:#9b59b6;}
+.tile.aw::after{background:#ffd54f;}
+.tile.hl::after{background:#ce93d8;}
+.tile-lbl{font-size:9px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.10em;display:flex;align-items:center;gap:5px;}
+.tile-val{font-size:30px;font-weight:700;line-height:1.05;color:#fff;}
+.tile-val.tw{color:var(--wc);}
+.tile-val.bk{color:var(--bc);}
+.tile-val.danger{color:var(--red);animation:blink .8s infinite;}
+.tile-val.warn{color:var(--orange);}
+.tile-sub{font-size:10px;color:var(--txt3);}
+.tile-src{display:flex;align-items:center;gap:5px;margin-top:6px;padding-top:6px;border-top:1px solid var(--border);flex-wrap:wrap;}
+.src-btn{padding:3px 8px;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid var(--brd2);background:var(--bg3);color:var(--txt3);transition:all .15s;white-space:nowrap;}
+.src-btn.src-active-nmea-wind{background:rgba(45,125,210,.25);border-color:var(--blue);color:var(--wc);}
+.src-btn.src-active-nmea-boat{background:rgba(31,173,107,.2);border-color:var(--green);color:var(--bc);}
+.src-btn.src-active-manual{background:rgba(224,112,32,.2);border-color:var(--orange);color:var(--orange);}
+.src-btn.src-validate{background:rgba(31,173,107,.15);color:var(--bc);border-color:rgba(31,173,107,.3);}
+.src-status{font-size:9px;padding:2px 6px;border-radius:5px;font-weight:600;white-space:nowrap;}
+.src-status.ok{background:rgba(31,173,107,.15);color:var(--bc);}
+.src-status.wait{background:rgba(224,112,32,.15);color:var(--orange);}
+.src-status.manual{background:rgba(224,112,32,.15);color:var(--orange);}
+.ctrl-manual-slider{display:none;align-items:center;gap:6px;margin-top:4px;}
+.ctrl-manual-slider input[type=range]{flex:1;accent-color:var(--orange);}
+.ctrl-manual-slider .slval{font-size:11px;font-weight:700;min-width:34px;text-align:right;}
+input[type=number]{width:60px;padding:5px 6px;border:1px solid var(--brd2);border-radius:7px;font-size:16px;font-weight:700;color:var(--wc);text-align:center;outline:none;background:var(--bg1);}
+input[type=range]{accent-color:var(--wc);}
+.bft-badge{padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;background:rgba(45,125,210,.15);color:var(--wc);border:1px solid rgba(45,125,210,.2);white-space:nowrap;}
+.ws-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px;}
+.ws-row label{font-size:10px;color:var(--txt3);}
+/* Speed */
+.speed-pair{display:flex;gap:0;margin-top:4px;}
+.speed-item{flex:1;text-align:center;padding:0 6px;}
+.speed-label{font-size:9px;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em;font-weight:700;}
+.speed-big{font-size:22px;font-weight:700;line-height:1.1;margin:3px 0;}
+.speed-sub{font-size:9px;color:var(--txt3);}
+.speed-divider{width:1px;background:var(--brd2);flex-shrink:0;}
+.speed-diff{font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px;margin-top:5px;display:none;}
+.speed-diff.pos{background:rgba(31,173,107,.15);color:var(--bc);}
+.speed-diff.neg{background:rgba(224,112,32,.15);color:var(--orange);}
+.speed-diff.zero{background:var(--bg3);color:var(--txt3);}
+/* AWA tile */
+.sensor-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-top:6px;}
+.sensor-item{display:flex;flex-direction:column;align-items:center;background:var(--bg3);border-radius:7px;padding:6px 4px;}
+.sensor-val{font-size:14px;font-weight:700;line-height:1.1;color:#fff;}
+.sensor-sub{font-size:8px;color:var(--txt3);margin-top:2px;text-transform:uppercase;letter-spacing:.06em;text-align:center;}
+/* Heel bar */
+.heel-bar-wrap{margin-top:8px;height:8px;background:var(--bg1);border-radius:4px;overflow:hidden;position:relative;}
+.heel-bar-center{position:absolute;left:50%;top:0;width:1px;height:100%;background:var(--brd2);}
+.heel-bar{position:absolute;top:0;height:100%;border-radius:4px;transition:all .4s;width:0;}
+/* Depth */
+.depth-margin{font-size:11px;font-weight:600;margin-top:2px;}
+.depth-margin.ok{color:var(--green);}
+.depth-margin.warn{color:var(--orange);}
+.depth-margin.danger{color:var(--red);}
+.depth-draft-info{font-size:9px;color:var(--txt3);margin-top:1px;}
+.depth-alert-btn{padding:4px 10px;border-radius:7px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid var(--brd2);background:var(--bg3);color:var(--txt3);transition:all .15s;white-space:nowrap;margin-top:5px;}
+.depth-alert-btn.active{background:rgba(31,173,107,.15);border-color:rgba(31,173,107,.3);color:var(--bc);}
+.depth-alert-btn.muted{background:var(--bg3);color:var(--txt3);}
+/* Baro */
+.baro-val{font-size:26px;font-weight:700;line-height:1.1;color:#c39bd3;}
+.baro-val.rising{color:var(--bc);}
+.baro-val.falling{color:var(--red);}
+.baro-trend{font-size:11px;font-weight:700;margin-top:2px;}
+.baro-trend.rising{color:var(--bc);}
+.baro-trend.falling{color:var(--red);}
+.baro-trend.steady{color:var(--txt3);}
+.baro-trend.rapid-rise{color:#00ff90;}
+.baro-trend.rapid-fall{color:#ff3333;}
+.baro-minmax{font-size:9px;color:var(--txt3);margin-top:2px;}
+.baro-src-row{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:6px;padding-top:6px;border-top:1px solid var(--border);}
+/* Bottom */
+.bottom-area{width:100%;max-width:1200px;padding:0 8px;}
+.sail-only{width:100%;}
+.sail-panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;display:flex;flex-direction:column;gap:5px;}
+.sail-panel-title{font-size:9px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;padding-bottom:5px;border-bottom:1px solid var(--border);}
+.allure-row{border-radius:9px;padding:8px 10px;border:1px solid transparent;transition:all .2s;}
+.allure-row.active{border-color:rgba(255,255,255,.15);box-shadow:0 2px 12px rgba(0,0,0,.3);}
+.allure-row-header{display:flex;align-items:center;gap:6px;margin-bottom:3px;}
+.allure-name{font-size:12px;font-weight:700;}
+.allure-twa{font-size:10px;font-weight:500;opacity:.6;}
+.allure-reglage{font-size:10px;font-weight:600;font-style:italic;margin:3px 0 4px;padding:3px 8px;border-radius:5px;background:rgba(255,255,255,.05);color:var(--txt2);display:inline-block;}
+.allure-voiles{display:flex;flex-wrap:wrap;gap:3px;}
+.av-tag{display:inline-block;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:600;}
+.allure-diagram{display:inline-block;}
+.sail-panel-no-allure{text-align:center;padding:18px 10px;color:var(--txt3);font-size:12px;}
+.sail-tag{display:inline-block;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;}
+.penon-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;}
+.penon-title{font-size:9px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.penon-cases{display:flex;flex-direction:column;gap:6px;}
+.penon-case{display:flex;align-items:center;gap:10px;border-radius:9px;padding:7px 9px;}
+.penon-case.ok{background:rgba(31,173,107,.08);border:1px solid rgba(31,173,107,.2);}
+.penon-case.ext{background:rgba(224,112,32,.08);border:1px solid rgba(224,112,32,.2);}
+.penon-case.int{background:rgba(208,48,48,.08);border:1px solid rgba(208,48,48,.2);}
+.penon-svg{flex-shrink:0;}
+.penon-text{flex:1;}
+.penon-state{font-size:11px;font-weight:700;margin-bottom:2px;}
+.penon-case.ok .penon-state{color:var(--bc);}
+.penon-case.ext .penon-state{color:var(--orange);}
+.penon-case.int .penon-state{color:var(--red);}
+.penon-action{font-size:10px;color:var(--txt2);line-height:1.5;}
+.penon-action strong{font-weight:700;color:var(--txt);}
+.depth-alert-banner{position:fixed;bottom:0;left:0;right:0;z-index:200;background:linear-gradient(135deg,#7a0000,var(--red));color:#fff;padding:14px 20px;display:none;flex-direction:column;align-items:center;gap:4px;box-shadow:0 -4px 30px rgba(208,48,48,.5);animation:bannerBlink 1s infinite;}
+@keyframes bannerBlink{0%,100%{opacity:1;}50%{opacity:.85;}}
+.depth-alert-title{font-size:16px;font-weight:800;letter-spacing:.04em;}
+.depth-alert-sub{font-size:12px;opacity:.9;}
+.depth-alert-close{position:absolute;right:16px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.2);border:none;color:#fff;font-size:13px;font-weight:700;padding:4px 10px;border-radius:8px;cursor:pointer;}
+.log-box{width:100%;max-width:1000px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:8px 14px;margin:0 8px;}
+.log-title{font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;cursor:pointer;user-select:none;}
+#log-content{font-family:'Courier New',monospace;font-size:10px;color:var(--txt3);max-height:90px;overflow-y:auto;display:none;margin-top:6px;}
+.hint{font-size:10px;color:var(--txt3);text-align:center;padding:2px 0 4px;}
+/* ── MINI PILOTAGE DISC ── */
+
+/* ── Topbar GPS Position ── */
+.topbar-gps{display:flex;flex-direction:column;gap:1px;padding:4px 10px;border-radius:9px;background:rgba(255,255,255,0.07);border:1px solid var(--brd2);flex-shrink:0;min-width:140px;}
+.topbar-gps-header{display:flex;align-items:center;gap:4px;margin-bottom:1px;}
+.topbar-gps-label{font-size:9px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;white-space:nowrap;}
+.topbar-gps-dot{width:6px;height:6px;border-radius:50%;background:var(--txt3);flex-shrink:0;transition:background .3s;}
+.topbar-gps-dot.live{background:var(--live);box-shadow:0 0 5px var(--live);}
+body.light .topbar-gps{background:rgba(0,40,100,0.07);border-color:rgba(0,40,100,0.18);}
+body.light .topbar-gps #gps-pos-lat,body.light .topbar-gps #gps-pos-lon{color:#0a1628;}
+/* ── GPS pos-box (conservé pour compatibilité JS) ── */
+.gps-pos-box{display:none;}
+/* ── Heel Alarm Banner ── */
+.heel-alarm-banner{position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:250;
+  min-width:280px;max-width:480px;border-radius:14px;padding:12px 56px 12px 16px;
+  display:none;flex-direction:column;gap:3px;pointer-events:auto;}
+.heel-alarm-banner.lvl-attention{background:linear-gradient(135deg,#6b4400,#a06000);border:2px solid #ffd54f;box-shadow:0 4px 20px rgba(255,210,0,0.4);animation:heelY 2s infinite;}
+.heel-alarm-banner.lvl-danger{background:linear-gradient(135deg,#7a0000,#c00000);border:2px solid #ff5555;box-shadow:0 4px 20px rgba(255,0,0,0.5);animation:heelR 1s infinite;}
+.heel-alarm-banner.lvl-urgence{background:#8B0000;border:2px solid #ff0000;box-shadow:0 4px 30px rgba(255,0,0,0.8);animation:heelB .5s infinite;}
+@keyframes heelY{0%,100%{box-shadow:0 4px 12px rgba(255,210,0,0.3);}50%{box-shadow:0 4px 24px rgba(255,210,0,0.7);}}
+@keyframes heelR{0%,100%{box-shadow:0 4px 14px rgba(255,0,0,0.4);}50%{box-shadow:0 4px 28px rgba(255,0,0,0.8);}}
+@keyframes heelB{0%,100%{opacity:1;}50%{opacity:.65;}}
+.heel-alarm-icon{font-size:18px;}
+.heel-alarm-title{font-size:13px;font-weight:800;color:#fff;letter-spacing:.03em;}
+.heel-alarm-sub{font-size:10px;color:rgba(255,255,255,.88);line-height:1.4;}
+.heel-alarm-close{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:9px;font-weight:700;padding:4px 7px;border-radius:7px;cursor:pointer;white-space:nowrap;}
+/* ══ MARÉES ══ */
+.maree-box{width:100%;max-width:1200px;margin:8px 8px 0;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.maree-header{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);background:linear-gradient(90deg,rgba(45,125,210,0.12),transparent);}
+.maree-header-icon{font-size:16px;}
+.maree-header-title{font-size:11px;font-weight:700;color:var(--wc);text-transform:uppercase;letter-spacing:.08em;flex:1;}
+.maree-port-name{font-size:11px;font-weight:700;color:var(--txt2);}
+.maree-port-select{font-size:11px;background:var(--bg3);border:1px solid var(--brd2);border-radius:7px;color:var(--txt2);padding:3px 8px;cursor:pointer;outline:none;}
+.maree-body{padding:12px 14px;}
+.maree-current{display:flex;align-items:baseline;gap:10px;margin-bottom:12px;}
+.maree-current-val{font-size:36px;font-weight:900;color:var(--wc);}
+.maree-current-unit{font-size:16px;color:var(--txt3);}
+.maree-current-label{font-size:11px;color:var(--txt3);}
+.maree-current-trend{font-size:18px;}
+.maree-bar-chart{display:flex;align-items:flex-end;gap:6px;height:80px;margin-bottom:8px;}
+.maree-bar-col{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;}
+.maree-bar-wrap{flex:1;width:100%;display:flex;align-items:flex-end;background:rgba(255,255,255,0.04);border-radius:5px 5px 0 0;overflow:hidden;min-height:60px;}
+.maree-bar{width:100%;border-radius:4px 4px 0 0;transition:height .5s ease;}
+.maree-bar.now{background:linear-gradient(180deg,var(--wc),rgba(45,125,210,0.4));}
+.maree-bar.future{background:linear-gradient(180deg,rgba(45,125,210,0.5),rgba(45,125,210,0.2));}
+.maree-bar-val{font-size:9px;font-weight:700;color:var(--txt2);white-space:nowrap;}
+.maree-bar-lbl{font-size:8px;color:var(--txt3);white-space:nowrap;}
+.maree-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;}
+.maree-cell{flex-shrink:0;background:var(--bg3);border-radius:8px;padding:6px 10px;text-align:center;min-width:60px;}
+.maree-cell.now-cell{background:rgba(45,125,210,0.18);border:1px solid rgba(45,125,210,0.3);}
+.maree-cell-lbl{font-size:8px;color:var(--txt3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
+.maree-cell-val{font-size:15px;font-weight:700;color:var(--wc);}
+.maree-cell-trend{font-size:10px;}
+body.light .maree-box{background:#fff;}
+body.light .maree-current-val{color:#1356b4;}
+body.light .maree-cell-val{color:#1356b4;}
+body.light .maree-cell{background:#e2eaf4;}
+body.light .maree-cell.now-cell{background:#dbeafe;border-color:#93c5fd;}
+@media(max-width:440px){.data-grid{grid-template-columns:1fr;}}
+/* ══ MMSI config ══ */
+.mmsi-status-box{display:flex;align-items:center;gap:5px;flex:1;min-width:0;}
+.mmsi-dot{width:8px;height:8px;border-radius:50%;background:var(--txt3);flex-shrink:0;transition:all .3s;}
+.mmsi-dot.ok{background:var(--bc);box-shadow:0 0 5px var(--bc);}
+.mmsi-dot.detected{background:var(--live);box-shadow:0 0 6px var(--live);animation:blink 2s infinite;}
+.mmsi-dot.active{background:#ff4444;box-shadow:0 0 6px #ff4444;animation:blink .6s infinite;}
+code{font-family:monospace;font-size:9px;background:rgba(255,255,255,0.08);padding:1px 4px;border-radius:3px;color:var(--txt2);}
+/* ══ MOB ALERT BANNER ══ */
+.mob-alert-banner{position:fixed;top:0;left:0;right:0;z-index:300;display:none;flex-direction:column;align-items:center;gap:6px;padding:16px 20px;background:linear-gradient(90deg,#8B0000,#CC0000,#8B0000);background-size:200%;animation:mobPulse 1.2s infinite;}
+@keyframes mobPulse{0%,100%{background-position:0%}50%{background-position:100%;box-shadow:0 4px 40px rgba(255,0,0,0.8);}}
+.mob-banner-title{font-size:20px;font-weight:900;color:#fff;letter-spacing:.08em;text-shadow:0 0 20px rgba(255,100,100,0.8);}
+.mob-banner-sub{font-size:13px;color:rgba(255,255,255,0.9);}
+.mob-banner-info{font-size:11px;color:rgba(255,255,255,0.75);font-family:monospace;}
+.mob-banner-close{position:absolute;right:16px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.2);border:none;color:#fff;font-size:12px;font-weight:700;padding:6px 14px;border-radius:8px;cursor:pointer;}
+/* ── AIS dot status indicator ── */
+.ais-dot{width:7px;height:7px;border-radius:50%;background:var(--txt3);flex-shrink:0;transition:background .3s;display:inline-block;}
+.ais-dot.live{background:var(--live);box-shadow:0 0 5px var(--live);}
+.ais-dot.alert{background:var(--red);box-shadow:0 0 5px var(--red);animation:blink .7s infinite;}
+/* ── AIS inline tile ── */
+.tile.ais-tile::after{background:#2d7dd2;}
+.ais-body-inline{display:flex;flex-direction:column;gap:4px;margin-top:6px;max-height:200px;overflow-y:auto;}
+.ais-body-inline::-webkit-scrollbar{width:3px;}
+.ais-body-inline::-webkit-scrollbar-thumb{background:var(--brd2);border-radius:2px;}
+.ais-vessel{display:grid;grid-template-columns:1fr auto;gap:2px 6px;padding:5px 7px;border-radius:7px;border-left:2.5px solid transparent;background:rgba(255,255,255,0.03);transition:background .15s;}
+.ais-vessel.v-danger{background:rgba(208,48,48,0.12);border-left-color:var(--red);}
+.ais-vessel.v-warn{background:rgba(224,112,32,0.10);border-left-color:var(--orange);}
+.ais-vessel.v-ok{border-left-color:rgba(45,125,210,0.3);}
+.ais-name{font-size:10px;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;}
+.ais-dist-badge{font-size:10px;font-weight:700;white-space:nowrap;align-self:start;}
+.ais-dist-badge.dc{color:var(--red);}
+.ais-dist-badge.dm{color:var(--orange);}
+.ais-dist-badge.df{color:var(--bc);}
+.ais-meta{font-size:8.5px;color:var(--txt3);grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap;}
+.ais-cpa-tag{font-weight:700;font-size:8.5px;}
+.ais-cpa-tag.c-danger{color:var(--red);}
+.ais-cpa-tag.c-warn{color:var(--orange);}
+.ais-cpa-tag.c-ok{color:var(--bc);}
+.ais-empty{padding:8px 4px;text-align:center;color:var(--txt3);font-size:9px;line-height:1.6;}
+.ais-count-badge{font-size:9px;font-weight:700;background:rgba(45,125,210,0.2);color:var(--wc);padding:1px 6px;border-radius:4px;border:1px solid rgba(45,125,210,0.25);}
+/* light overrides for inline AIS */
+body.light .ais-vessel{background:rgba(0,0,0,0.02);}
+body.light .ais-vessel.v-danger{background:rgba(183,28,28,0.08);border-left-color:#b71c1c;}
+body.light .ais-vessel.v-warn{background:rgba(196,80,0,0.07);border-left-color:#c45000;}
+body.light .ais-vessel.v-ok{border-left-color:rgba(19,86,180,0.2);}
+body.light .ais-name{color:#0a1628;}
+body.light .ais-dist-badge.dc{color:#b71c1c;}
+body.light .ais-dist-badge.dm{color:#c45000;}
+body.light .ais-dist-badge.df{color:#166534;}
+body.light .ais-meta{color:#6a85a8;}
+body.light .ais-cpa-tag.c-danger{color:#b71c1c;}
+body.light .ais-cpa-tag.c-warn{color:#c45000;}
+body.light .ais-cpa-tag.c-ok{color:#166534;}
+body.light .ais-count-badge{background:rgba(19,86,180,0.12);color:#1356b4;border-color:rgba(19,86,180,0.25);}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <span class="topbar-title">⛵ <span>Disque des Allures</span></span>
+
+  <!-- GPS Position in topbar -->
+  <div class="topbar-gps" id="topbar-gps">
+    <div class="topbar-gps-header">
+      <span class="topbar-gps-dot" id="topbar-gps-dot"></span>
+      <span class="topbar-gps-label">📍 Position GPS</span>
+      <span class="live-badge" id="gps-pos-badge" style="display:none;font-size:8px;padding:1px 5px;">LIVE</span>
+    </div>
+    <div id="gps-pos-lat" style="font-size:11px;font-weight:700;font-family:monospace;color:var(--txt);white-space:nowrap;">— — N</div>
+    <div id="gps-pos-lon" style="font-size:11px;font-weight:700;font-family:monospace;color:var(--txt);white-space:nowrap;">— — E</div>
+  </div>
+
+  <div class="topbar-indicators">
+    <div class="status-dot" id="sdot"></div>
+    <span class="topbar-src wind" id="topbar-wind-src">TWD</span>
+    <span class="topbar-src boat" id="topbar-boat-src">HDG</span>
+  </div>
+  <button class="topbar-settings-btn" id="settings-toggle-btn" onclick="toggleSettings()">⚙ Paramètres <i class="topbar-chevron" id="settings-chevron">▾</i></button>
+  <button class="theme-toggle-btn" id="theme-btn" onclick="toggleTheme()" title="Basculer thème clair/sombre">🌙</button>
+</div>
+<!-- ═══ MOB ALERT BANNER ═══ -->
+<div class="mob-alert-banner" id="mob-alert-banner">
+  <div class="mob-banner-title">🆘 HOMME À LA MER — MAN OVERBOARD</div>
+  <div class="mob-banner-sub" id="mob-banner-sub">Balise AIS-MOB détectée !</div>
+  <div class="mob-banner-info" id="mob-banner-info">MMSI: — | Distance: — NM | COG: — | SOG: —</div>
+  <button class="mob-banner-close" onclick="clearMOBAlert()">✅ Pris en compte</button>
+</div>
+
+<div class="settings-panel" id="settings-panel">
+  <div class="settings-section">
+    <div class="settings-section-title">🔌 Connexion YDWG-02</div>
+    <div class="conn-row">
+      <label>IP :</label><input type="text" id="ip" value="192.168.1.1">
+      <label>Port :</label><input type="text" id="port" value="10110" style="width:70px;flex:none;">
+      <button class="btn btn-connect" id="btn-conn" onclick="toggleConnect()">Connecter</button>
+      <button class="btn btn-manual" onclick="setManualMode()">Manuel</button>
+    </div>
+    <div class="status-row"><div class="status-dot-inline" id="sdot-panel"></div><span class="status-txt" id="stxt">Non connecté</span></div>
+  </div>
+  <div class="settings-section">
+    <div class="settings-section-title">📡 Sources NMEA</div>
+    <div class="sel-grid">
+      <div class="sel-box">
+        <div class="sel-title">🌬️ Vent</div>
+        <span class="sel-btn aw" data-t="w" data-k="TWD">TWD</span><span class="sel-btn" data-t="w" data-k="AWD">AWD</span><span class="sel-btn" data-t="w" data-k="TWA">TWA</span><span class="sel-btn" data-t="w" data-k="AWA">AWA</span>
+        <div class="sel-desc" id="wd">True Wind Direction — vent vrai / fond</div>
+      </div>
+      <div class="sel-box">
+        <div class="sel-title">⛵ Cap</div>
+        <span class="sel-btn ab" data-t="b" data-k="HDG">HDG</span><span class="sel-btn" data-t="b" data-k="HDT">HDT</span><span class="sel-btn" data-t="b" data-k="HDM">HDM</span><span class="sel-btn" data-t="b" data-k="COG">COG</span>
+        <div class="sel-desc" id="bd">Heading — cap compas magnétique</div>
+      </div>
+    </div>
+  </div>
+  <div class="settings-section">
+    <div class="settings-section-title">⚓ Tirant d'eau</div>
+    <div class="draft-row">
+      <label>Tirant d'eau :</label>
+      <input class="draft-input" type="number" id="draft-input" min="0.1" max="10" step="0.1" value="1.8">
+      <span style="font-size:11px;color:var(--txt2);">m</span>
+      <div class="draft-badge" id="draft-badge">T.E. = 1.80 m</div>
+      <span style="font-size:10px;color:var(--txt3);flex:1;">Alerte si marge fond–quille &lt; 1 m</span>
+    </div>
+  </div>
+  <div class="settings-section">
+    <div class="settings-section-title">🔧 Heures moteur &amp; régime</div>
+    <div class="engine-row">
+      <div class="engine-item"><span class="engine-item-label">Heures totales</span><span class="engine-item-val" id="engine-hours-val">—</span><span class="engine-item-sub">NMEA XDR</span></div>
+      <div class="engine-item"><span class="engine-item-label">RPM moteur</span><span class="engine-item-val" id="engine-rpm-val">—</span><span class="engine-item-sub">NMEA RPM</span></div>
+      <div class="engine-item"><span class="engine-item-label">État</span><span class="engine-item-val" id="engine-state-val">—</span><span class="engine-item-sub" id="engine-state-sub">En attente…</span></div>
+      <span class="src-status wait" id="engine-src-st" style="align-self:center">⏳ En attente…</span>
+    </div>
+  </div>
+
+  <!-- AIS MMSI -->
+  <div class="settings-section">
+    <div class="settings-section-title">📡 AIS — Identifiants MMSI</div>
+
+    <!-- Own vessel MMSI -->
+    <div style="display:flex;flex-direction:column;gap:5px;">
+      <div style="font-size:10px;font-weight:700;color:var(--txt2)">⛵ MMSI de notre bateau</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <input type="text" id="own-mmsi-input" maxlength="9" placeholder="ex: 227123456" style="width:130px;flex:none;font-family:monospace;font-size:13px;letter-spacing:.05em;" oninput="applyOwnMMSI()">
+        <div class="mmsi-status-box" id="own-mmsi-status">
+          <span class="mmsi-dot" id="own-mmsi-dot"></span>
+          <span id="own-mmsi-txt" style="font-size:10px;color:var(--txt3)">Non renseigné — exclu du trafic automatiquement via !AIVDO</span>
+        </div>
+      </div>
+      <div style="font-size:9px;color:var(--txt3);line-height:1.5;">
+        Si votre VHF émet en AIS, son MMSI apparaît automatiquement dans les trames <code>!AIVDO</code> et sera exclu du trafic.<br>
+        Sinon, entrez-le manuellement pour ne pas voir votre propre bateau dans la liste.
+      </div>
+    </div>
+
+    <div style="width:100%;height:1px;background:var(--border);margin:4px 0;"></div>
+
+    <!-- MOB MMSI -->
+    <div style="display:flex;flex-direction:column;gap:5px;">
+      <div style="font-size:10px;font-weight:700;color:#ff4444;">🆘 MMSI de la balise AIS-MOB</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <input type="text" id="mob-mmsi-input" maxlength="9" placeholder="ex: 972XXXXXX" style="width:130px;flex:none;font-family:monospace;font-size:13px;letter-spacing:.05em;border-color:rgba(208,48,48,0.4);" oninput="applyMobMMSI()">
+        <div class="mmsi-status-box" id="mob-mmsi-status">
+          <span class="mmsi-dot" id="mob-mmsi-dot"></span>
+          <span id="mob-mmsi-txt" style="font-size:10px;color:var(--txt3)">Non configuré</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:2px;">
+        <button class="btn btn-manual" style="font-size:10px;padding:4px 10px;" onclick="simulateMOB()">🧪 Test alerte MOB</button>
+        <button class="btn btn-manual" style="font-size:10px;padding:4px 10px;color:var(--bc);border-color:rgba(31,173,107,0.3);" onclick="clearMOBAlert()">✅ Annuler alerte</button>
+      </div>
+      <div style="font-size:9px;color:var(--txt3);line-height:1.5;">
+        MMSI MOB format : <code>972XXXXXXX</code> (AIS SART) ou <code>970XXXXXXX</code> (PLB-AIS).<br>
+        Une alerte sonore + visuelle se déclenche dès réception de ce MMSI.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="main-layout">
+  <!-- COL GAUCHE : pénons + TWA + Nord -->
+  <div class="left-col">
+    <!-- Pénons -->
+    <div class="penon-box">
+      <div class="penon-title">
+        <svg width="14" height="14" viewBox="0 0 16 16"><line x1="8" y1="2" x2="8" y2="14" stroke="currentColor" stroke-width="1.5"/><line x1="8" y1="5" x2="14" y2="5" stroke="#1fad6b" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="9" x2="2" y2="9" stroke="#d03030" stroke-width="2" stroke-linecap="round"/></svg>
+        Lecture des pénons / faveurs
+      </div>
+      <div class="penon-cases">
+        <div class="penon-case ok">
+          <div class="penon-svg"><svg width="72" height="52" viewBox="0 0 72 52"><path d="M20,26 Q36,10 52,26 Q36,42 20,26Z" fill="rgba(45,125,210,.15)" stroke="#4da8ff" stroke-width="1.2"/><line x1="52" y1="20" x2="66" y2="20" stroke="#1fad6b" stroke-width="2" stroke-linecap="round"/><circle cx="52" cy="20" r="2" fill="#1fad6b"/><line x1="20" y1="32" x2="6" y2="32" stroke="#d03030" stroke-width="2" stroke-linecap="round"/><circle cx="20" cy="32" r="2" fill="#d03030"/><text x="68" y="20" font-size="7" fill="#1fad6b" dominant-baseline="middle" font-weight="700">Ext</text><text x="3" y="32" font-size="7" fill="#d03030" dominant-baseline="middle" text-anchor="end" font-weight="700">Int</text><text x="36" y="50" font-size="7" fill="#4a6a8a" text-anchor="middle">← Vent</text></svg></div>
+          <div class="penon-text"><div class="penon-state">✅ Les deux pénons horizontaux</div><div class="penon-action">Voile <strong>bien réglée</strong> — filet d'air propre.</div></div>
+        </div>
+        <div class="penon-case ext">
+          <div class="penon-svg"><svg width="72" height="52" viewBox="0 0 72 52"><path d="M20,26 Q36,10 52,26 Q36,42 20,26Z" fill="rgba(224,112,32,.12)" stroke="#e07020" stroke-width="1.2"/><line x1="52" y1="20" x2="64" y2="13" stroke="#e07020" stroke-width="2" stroke-linecap="round" stroke-dasharray="3,2"/><circle cx="52" cy="20" r="2" fill="#e07020"/><text x="65" y="12" font-size="9" fill="#e07020" dominant-baseline="middle" font-weight="700">↗</text><line x1="20" y1="32" x2="6" y2="32" stroke="#1fad6b" stroke-width="2" stroke-linecap="round"/><circle cx="20" cy="32" r="2" fill="#1fad6b"/><text x="3" y="32" font-size="7" fill="#d03030" dominant-baseline="middle" text-anchor="end" font-weight="700">Int</text><text x="68" y="20" font-size="7" fill="#e07020" dominant-baseline="middle" font-weight="700">Ext</text><text x="36" y="50" font-size="7" fill="#4a6a8a" text-anchor="middle">← Vent</text></svg></div>
+          <div class="penon-text"><div class="penon-state">⚠️ Pénon extrados fasseye</div><div class="penon-action">Trop bordée — <strong>choquer</strong> ou <strong>lofer</strong>.</div></div>
+        </div>
+        <div class="penon-case int">
+          <div class="penon-svg"><svg width="72" height="52" viewBox="0 0 72 52"><path d="M20,26 Q36,10 52,26 Q36,42 20,26Z" fill="rgba(208,48,48,.1)" stroke="#d03030" stroke-width="1.2"/><line x1="52" y1="20" x2="66" y2="20" stroke="#1fad6b" stroke-width="2" stroke-linecap="round"/><circle cx="52" cy="20" r="2" fill="#1fad6b"/><text x="68" y="20" font-size="7" fill="#1fad6b" dominant-baseline="middle" font-weight="700">Ext</text><line x1="20" y1="32" x2="8" y2="39" stroke="#d03030" stroke-width="2" stroke-linecap="round" stroke-dasharray="3,2"/><circle cx="20" cy="32" r="2" fill="#d03030"/><text x="6" y="42" font-size="9" fill="#d03030" dominant-baseline="middle" text-anchor="middle" font-weight="700">↙</text><text x="3" y="32" font-size="7" fill="#d03030" dominant-baseline="middle" text-anchor="end" font-weight="700">Int</text><text x="36" y="50" font-size="7" fill="#4a6a8a" text-anchor="middle">← Vent</text></svg></div>
+          <div class="penon-text"><div class="penon-state">⚠️ Pénon intrados fasseye</div><div class="penon-action">Trop choquée — <strong>border</strong> ou <strong>abattre</strong>.</div></div>
+        </div>
+      </div>
+    </div>
+    <!-- TWA badge -->
+    <div class="twa-badge">
+      <div><div class="twa-sub">Angle au vent</div><div class="twa-val" id="twa-display">—°</div></div>
+      <div style="flex:1"><div class="twa-sub">Bord</div><div class="twa-side" id="twa-side-display">—</div></div>
+      <div><div class="twa-sub">Allure</div><div style="font-size:13px;font-weight:700;color:var(--txt2)" id="twa-allure-display">—</div></div>
+    </div>
+    <!-- Nord -->
+    <div class="nord-box">
+      <div class="nord-top">
+        <span class="nord-label">🧭 Nord compas</span>
+        <div class="nord-src-group">
+          <button class="nord-src-btn active-manual" id="btn-nord-manual" onclick="setNordSource('manual')">✋ Manuel</button>
+          <button class="nord-src-btn" id="btn-nord-sensor" onclick="setNordSource('sensor')">📱 Capteur</button>
+        </div>
+        <span class="compass-rot-val" id="nord-val">N = 0°</span>
+        <span class="sensor-status wait" id="sensor-status" style="display:none">⏳</span>
+      </div>
+      <div class="compass-rot-manual" id="nord-manual-row">
+        <span style="font-size:10px;color:var(--txt3);white-space:nowrap;">Orienter :</span>
+        <input type="range" id="nord-slider" min="0" max="359" value="0" step="1" style="flex:1;accent-color:#d03030;">
+        <button class="btn-nord" onclick="resetNord()">↺ 0°</button>
+      </div>
+      <div id="nord-sensor-row" style="display:none;font-size:10px;color:var(--txt2);margin-top:5px;line-height:1.7;">
+        <div>📡 Nord depuis le magnétomètre de l'appareil.</div>
+        <div style="color:var(--bc);font-weight:600;">✅ Android : http:// — iOS : HTTPS + Safari</div>
+        <div id="sensor-alpha-info" style="font-family:monospace;font-size:9px;color:var(--txt3);margin-top:3px;background:var(--bg1);border-radius:5px;padding:3px 6px;min-height:16px;word-break:break-all;"></div>
+      </div>
+    </div>
+
+    <!-- AIS dans la colonne gauche -->
+    <div class="tile ais-tile" style="width:100%;">
+      <div class="tile-lbl">
+        <div class="ais-dot" id="ais-dot" style="margin-right:4px;flex-shrink:0;"></div>
+        ⚓ AIS &lt; 1 NM
+        <span class="ais-count-badge" id="ais-count" style="margin-left:auto">—</span>
+      </div>
+      <div class="ais-body-inline" id="ais-list">
+        <div class="ais-empty">🔌 En attente NMEA…</div>
+      </div>
+      <div class="ais-no-gps" id="ais-no-gps" style="display:none;font-size:8px;color:var(--orange);margin-top:4px;">⚠️ Pas de position GPS propre</div>
+      <div class="ais-own-pos" id="ais-own-pos" style="display:none;font-size:8px;color:var(--txt3);margin-top:3px;padding-top:3px;border-top:1px solid var(--border);">
+        📍 <span id="ais-own-pos-txt" style="color:var(--bc)">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- COL CENTRE : compas -->
+  <div class="center-col">
+    <canvas id="c"></canvas>
+  </div>
+
+  <div class="data-grid">
+    <!-- Éléments cachés nécessaires au JS (TWS inputs, STW, etc.) -->
+    <div style="display:none">
+      <span id="ws-live-badge"></span>
+      <div id="tws-big">15 kts</div>
+      <input id="wspeed" type="number" min="0" max="70" value="15" step="1">
+      <div id="bft">Bf 4</div>
+      <input id="wslider" type="range" min="0" max="60" value="15" step="1">
+      <div id="stw-val">—</div>
+      <div id="speed-diff"></div>
+    </div>
+
+    <!-- 1. HDG — Cap compas (priorité 1) -->
+    <div class="tile bk">
+      <div class="tile-lbl">⛵ <span id="blbl">HDG</span> — Cap compas <span class="live-badge" id="bd-live-badge" style="display:none">LIVE</span></div>
+      <div class="tile-val bk" id="bval">45°</div>
+      <div class="tile-sub" id="bcard">Cap NE</div>
+      <div class="tile-src">
+        <button class="src-btn src-active-nmea-boat" id="btn-b-nmea" onclick="setBoatSource('nmea')">📡 NMEA</button>
+        <button class="src-btn" id="btn-b-manual" onclick="setBoatSource('manual')">✋</button>
+        <button class="src-btn src-validate" id="btn-b-validate" onclick="validateBoatHdg()" style="display:none">✅</button>
+        <span class="src-status wait" id="boat-src-st">En attente…</span>
+      </div>
+      <div class="ctrl-manual-slider" id="boat-slider-row">
+        <input type="range" id="boat-hdg-sl" min="0" max="359" value="45" step="1">
+        <span class="slval" id="boat-sl-val" style="color:var(--bc)">45°</span>
+      </div>
+    </div>
+
+    <!-- 2. TWD — Direction vent -->
+    <div class="tile tw">
+      <div class="tile-lbl">🌬 <span id="wlbl">TWD</span> — Vent <span class="live-badge" id="wd-live-badge" style="display:none">LIVE</span></div>
+      <div class="tile-val tw" id="wval">0°</div>
+      <div class="tile-sub" id="wcard">Vient du N</div>
+      <div class="tile-src">
+        <button class="src-btn src-active-nmea-wind" id="btn-w-nmea" onclick="setWindSource('nmea')">📡 NMEA</button>
+        <button class="src-btn" id="btn-w-manual" onclick="setWindSource('manual')">✋</button>
+        <button class="src-btn src-validate" id="btn-w-validate" onclick="validateWindDir()" style="display:none">✅</button>
+        <span class="src-status wait" id="wind-src-st">En attente…</span>
+      </div>
+      <div class="ctrl-manual-slider" id="wind-slider-row">
+        <input type="range" id="wind-dir-sl" min="0" max="359" value="0" step="1">
+        <span class="slval" id="wind-sl-val" style="color:var(--wc)">0°</span>
+      </div>
+    </div>
+
+    <!-- 3. COG — Cap fond GPS -->
+    <div class="tile sp">
+      <div class="tile-lbl">🧭 COG — Cap fond GPS <span class="live-badge" id="cog-live-badge" style="display:none">LIVE</span></div>
+      <div class="tile-val" id="cog-val" style="color:var(--orange)">—°</div>
+      <div class="tile-sub" id="cog-card">En attente NMEA (RMC)…</div>
+    </div>
+
+    <!-- 4. SOG — Vitesse GPS -->
+    <div class="tile sp">
+      <div class="tile-lbl">🚢 SOG — Vitesse GPS <span class="live-badge" id="speed-live-badge" style="display:none">LIVE</span></div>
+      <div class="tile-val" id="sog-val" style="color:var(--bc)">— kts</div>
+      <div class="tile-sub" id="sog-sub">En attente NMEA (VTG/RMC)…</div>
+    </div>
+    <!-- AWA -->
+    <div class="tile aw">
+      <div class="tile-lbl">📐 AWA — Vent apparent <span class="live-badge" id="awa-live-badge" style="display:none">LIVE</span></div>
+      <div class="tile-val" id="awa-angle-big" style="color:#ffd54f">—°</div>
+      <div class="tile-sub" id="awa-side-txt">En attente NMEA (MWV R)…</div>
+      <div class="sensor-grid">
+        <div class="sensor-item"><span class="sensor-val" id="awa-angle-val" style="color:#ffd54f">—°</span><span class="sensor-sub">Angle</span></div>
+        <div class="sensor-item"><span class="sensor-val" id="awa-speed-val" style="color:var(--wc)">—</span><span class="sensor-sub">AWS kts</span></div>
+        <div class="sensor-item"><span class="sensor-val" id="awa-side-val" style="color:var(--txt2)">—</span><span class="sensor-sub">Bord</span></div>
+      </div>
+    </div>
+    <!-- STW — Loch -->
+    <div class="tile sp">
+      <div class="tile-lbl">🚤 STW — Loch <span class="live-badge" id="stw-live-badge" style="display:none">LIVE</span></div>
+      <div class="tile-val" id="stw-big-val" style="color:#4da8ff">— kts</div>
+      <div class="tile-sub" id="stw-sub">En attente NMEA (VHW)…</div>
+      <div class="stw-minmax" id="stw-minmax" style="display:none;margin-top:6px;padding-top:5px;border-top:1px solid var(--border);display:flex;gap:10px;">
+        <span style="font-size:9px;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em;align-self:center;">Min</span>
+        <span style="font-size:13px;font-weight:700;color:#4da8ff" id="stw-min-val">—</span>
+        <span style="font-size:9px;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em;align-self:center;margin-left:auto;">Max</span>
+        <span style="font-size:13px;font-weight:700;color:#4da8ff" id="stw-max-val">—</span>
+        <button onclick="resetSTWMinMax()" style="font-size:8px;padding:2px 6px;border-radius:5px;background:var(--bg3);border:1px solid var(--border);color:var(--txt3);cursor:pointer;margin-left:4px;">↺</button>
+      </div>
+    </div>
+    <!-- PROFONDEUR -->
+    <div class="tile dp">
+      <div class="tile-lbl">🔱 Profondeur <span class="live-badge" id="depth-live-badge" style="display:none">LIVE</span></div>
+      <div class="tile-val" id="depth-val" style="color:var(--wc)">— m</div>
+      <div class="depth-margin" id="depth-margin">En attente NMEA (DPT)…</div>
+      <div class="depth-draft-info" id="depth-draft-info">Tirant d'eau : 1.80 m — alerte si marge &lt; 1 m</div>
+      <button class="depth-alert-btn active" id="depth-alert-btn" onclick="toggleDepthAlert()">🔔 Alerte ON</button>
+    </div>
+    <!-- BARO -->
+    <div class="tile br">
+      <div class="tile-lbl">🌡 Pression <span class="live-badge" id="baro-live-badge" style="display:none">LIVE</span></div>
+      <div class="baro-val" id="baro-val">— hPa</div>
+      <div class="baro-trend steady" id="baro-trend">— Tendance 3 min</div>
+      <div class="baro-minmax" id="baro-minmax">Min : — | Max : — (1h)</div>
+      <div class="baro-src-row">
+        <button class="src-btn" id="btn-baro-nmea" onclick="setBaroSource('nmea')" style="background:rgba(155,89,182,.25);border-color:rgba(155,89,182,.4);color:#c39bd3">📡 NMEA</button>
+        <button class="src-btn" id="btn-baro-sensor" onclick="setBaroSource('sensor')">📱 Capteur</button>
+        <span class="src-status wait" id="baro-src-st">⏳ En attente…</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ghost -->
+<div style="display:none"><div id="sail-allure"></div><div id="sail-config"></div><div id="sail-warning"></div></div>
+
+<div class="bottom-area">
+  <div class="sail-only" style="display:flex;gap:10px;align-items:stretch;">
+    <!-- Panneau Voiles réduit -->
+    <div class="sail-panel" id="sail-panel" style="flex:1;min-width:0;">
+      <div class="sail-panel-title">⛵ Voiles — allure en cours</div>
+      <div id="sail-panel-content">
+        <div class="sail-panel-no-allure" style="color:var(--txt3)">⏳ Calcul en cours…</div>
+      </div>
+    </div>
+    <!-- Panneau Écoutes de Génois -->
+    <div class="sail-panel genois-panel" id="genois-panel" style="flex:1;min-width:0;">
+      <div class="sail-panel-title">🎿 Écoutes de Génois — Configuration</div>
+      <div id="genois-panel-content">
+        <div class="sail-panel-no-allure" style="color:var(--txt3)">⏳ Calcul en cours…</div>
+      </div>
+    </div>
+  </div>
+  <!-- old penon-box removed, now in left-col -->
+  <div style="display:none"><div class="penon-box">
+      <div class="penon-title">
+        <svg width="14" height="14" viewBox="0 0 16 16"><line x1="8" y1="2" x2="8" y2="14" stroke="currentColor" stroke-width="1.5"/><line x1="8" y1="5" x2="14" y2="5" stroke="#1fad6b" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="9" x2="2" y2="9" stroke="#d03030" stroke-width="2" stroke-linecap="round"/></svg>
+        Lecture des pénons / faveurs
+      </div>
+      <div class="penon-cases">
+        <div class="penon-case ok">
+          <div class="penon-svg"><svg width="72" height="52" viewBox="0 0 72 52"><path d="M20,26 Q36,10 52,26 Q36,42 20,26Z" fill="rgba(45,125,210,.15)" stroke="#4da8ff" stroke-width="1.2"/><line x1="52" y1="20" x2="66" y2="20" stroke="#1fad6b" stroke-width="2" stroke-linecap="round"/><circle cx="52" cy="20" r="2" fill="#1fad6b"/><line x1="20" y1="32" x2="6" y2="32" stroke="#d03030" stroke-width="2" stroke-linecap="round"/><circle cx="20" cy="32" r="2" fill="#d03030"/><text x="68" y="20" font-size="7" fill="#1fad6b" dominant-baseline="middle" font-weight="700">Ext</text><text x="3" y="32" font-size="7" fill="#d03030" dominant-baseline="middle" text-anchor="end" font-weight="700">Int</text><text x="36" y="50" font-size="7" fill="#4a6a8a" text-anchor="middle">← Vent</text></svg></div>
+          <div class="penon-text"><div class="penon-state">✅ Les deux pénons horizontaux</div><div class="penon-action">Voile <strong>bien réglée</strong> — filet d'air propre.</div></div>
+        </div>
+        <div class="penon-case ext">
+          <div class="penon-svg"><svg width="72" height="52" viewBox="0 0 72 52"><path d="M20,26 Q36,10 52,26 Q36,42 20,26Z" fill="rgba(224,112,32,.12)" stroke="#e07020" stroke-width="1.2"/><line x1="52" y1="20" x2="64" y2="13" stroke="#e07020" stroke-width="2" stroke-linecap="round" stroke-dasharray="3,2"/><circle cx="52" cy="20" r="2" fill="#e07020"/><text x="65" y="12" font-size="9" fill="#e07020" dominant-baseline="middle" font-weight="700">↗</text><line x1="20" y1="32" x2="6" y2="32" stroke="#1fad6b" stroke-width="2" stroke-linecap="round"/><circle cx="20" cy="32" r="2" fill="#1fad6b"/><text x="3" y="32" font-size="7" fill="#d03030" dominant-baseline="middle" text-anchor="end" font-weight="700">Int</text><text x="68" y="20" font-size="7" fill="#e07020" dominant-baseline="middle" font-weight="700">Ext</text><text x="36" y="50" font-size="7" fill="#4a6a8a" text-anchor="middle">← Vent</text></svg></div>
+          <div class="penon-text"><div class="penon-state">⚠️ Pénon extrados fasseye</div><div class="penon-action">Trop bordée — <strong>choquer</strong> ou <strong>lofer</strong>.</div></div>
+        </div>
+        <div class="penon-case int">
+          <div class="penon-svg"><svg width="72" height="52" viewBox="0 0 72 52"><path d="M20,26 Q36,10 52,26 Q36,42 20,26Z" fill="rgba(208,48,48,.1)" stroke="#d03030" stroke-width="1.2"/><line x1="52" y1="20" x2="66" y2="20" stroke="#1fad6b" stroke-width="2" stroke-linecap="round"/><circle cx="52" cy="20" r="2" fill="#1fad6b"/><text x="68" y="20" font-size="7" fill="#1fad6b" dominant-baseline="middle" font-weight="700">Ext</text><line x1="20" y1="32" x2="8" y2="39" stroke="#d03030" stroke-width="2" stroke-linecap="round" stroke-dasharray="3,2"/><circle cx="20" cy="32" r="2" fill="#d03030"/><text x="6" y="42" font-size="9" fill="#d03030" dominant-baseline="middle" text-anchor="middle" font-weight="700">↙</text><text x="3" y="32" font-size="7" fill="#d03030" dominant-baseline="middle" text-anchor="end" font-weight="700">Int</text><text x="36" y="50" font-size="7" fill="#4a6a8a" text-anchor="middle">← Vent</text></svg></div>
+          <div class="penon-text"><div class="penon-state">⚠️ Pénon intrados fasseye</div><div class="penon-action">Trop choquée — <strong>border</strong> ou <strong>abattre</strong>.</div></div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<div class="depth-alert-banner" id="depth-alert-banner">
+  <div class="depth-alert-title" id="depth-alert-title">⚠️ FAIBLE PROFONDEUR</div>
+  <div class="depth-alert-sub" id="depth-alert-sub">—</div>
+  <button class="depth-alert-close" onclick="document.getElementById('depth-alert-banner').style.display='none'">✕</button>
+</div>
+<!-- ═══ MARÉES ═══ -->
+<div class="maree-box" id="maree-box">
+  <div class="maree-header">
+    <span class="maree-header-icon">🌊</span>
+    <span class="maree-header-title">Hauteur d'eau — Marées</span>
+    <span class="maree-port-name" id="maree-port-name">La Rochelle</span>
+    <select class="maree-port-select" id="maree-port-select" onchange="onPortChange()">
+      <option value="larochelle">La Rochelle</option>
+      <option value="brest">Brest</option>
+      <option value="cherbourg">Cherbourg</option>
+      <option value="stmalo">Saint-Malo</option>
+      <option value="lorient">Lorient</option>
+      <option value="lesables">Les Sables-d'Olonne</option>
+      <option value="bordeaux">Bordeaux (Pauillac)</option>
+      <option value="bayonne">Bayonne</option>
+      <option value="marseille">Marseille</option>
+      <option value="nice">Nice</option>
+      <option value="calais">Calais</option>
+      <option value="dunkerque">Dunkerque</option>
+    </select>
+  </div>
+  <div class="maree-body">
+    <div class="maree-current">
+      <span class="maree-current-trend" id="maree-trend-icon">〰️</span>
+      <span class="maree-current-val" id="maree-now-val">—</span>
+      <span class="maree-current-unit">m</span>
+      <span class="maree-current-label" id="maree-phase-txt">calcul…</span>
+    </div>
+    <div class="maree-bar-chart" id="maree-bars"></div>
+    <div class="maree-row" id="maree-cells"></div>
+  </div>
+</div>
+
+<div class="log-box"><div class="log-title" onclick="toggleLog()">📡 Trames NMEA ▸</div><div id="log-content"></div></div>
+<div class="hint">LIVE : données YDWG-02 — Manuel : glissez 🌬️ et ⛵</div>
+<p style="font-size:11px;color:#4a6a8a;text-align:center;padding-bottom:10px;">Jean-Yves COLLIN — V2.2</p>
+<script>
+// ── Theme (déclaré en premier, utilisé partout) ──
+let isLight=localStorage.getItem('theme')==='light';
+
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+let CX,CY,R,Ri,windDir=0,boatHdg=45,drag=null,lastA=0,tws=15;
+let wk='TWD',bk='HDG',ws=null,liveMode=false,manualMode=false;
+let liveWind=false,liveBoat=false,liveWS=false,logLines=[];
+let compassOffset=0;
+let depthM=null,liveDepth=false,draft=1.8,depthAlertOn=true;
+let windSource='nmea', boatSource='nmea'; // 'nmea' | 'manual'
+// ── Vitesses ──
+let stw=null, sog=null, liveSTW=false, liveSOG=false;
+let stwMin=null, stwMax=null;
+// ── Moteur ──
+let engineHours=null, engineRpm=null, liveEngine=false;
+// ── AWA ──
+let awaAngle=null, awaSpeed=null, liveAWA=false;
+// ── Heel / Pitch ──
+let heelDeg=null, pitchDeg=null, liveHeel=false;
+// ── AIS & own position ──
+let ownLat=null,ownLon=null,ownSOG_gps=null,ownCOG_gps=null;
+let aisTargets=new Map();  // mmsi → vessel object
+let aisParts=new Map();    // multipart assembly buffer
+const AIS_TIMEOUT=180000;  // 3 min stale threshold
+const AIS_DIST_NM=1.0;     // display radius
+let ownMMSI='';            // own vessel MMSI (to exclude from traffic)
+let ownMMSIauto='';        // auto-detected from !AIVDO
+let mobMMSI='';            // MOB device MMSI
+let mobAlertActive=false;  // MOB alert state
+
+const WD={TWD:{d:'True Wind Direction — vent vrai / fond',c:'#1565C0'},AWD:{d:'Apparent Wind Direction — vent apparent',c:'#1976D2'},TWA:{d:'True Wind Angle — angle vent vrai / cap',c:'#0288D1'},AWA:{d:'Apparent Wind Angle — angle vent apparent',c:'#0277BD'}};
+const BD={HDG:{d:'Heading — cap compas magnétique brut',c:'#1B6B3A'},HDT:{d:'Heading True — cap vrai + déclinaison',c:'#2E7D32'},HDM:{d:'Heading Magnetic — cap magnétique corrigé',c:'#388E3C'},COG:{d:'Course Over Ground — route fond GPS',c:'#1B5E20'}};
+const SECTORS_DARK=[
+  {from:0,to:45,color:'#ff4444',fill:'rgba(220,30,30,0.22)',name:'Zone morte',detail:'Impossible — trop près du vent'},
+  {from:45,to:60,color:'#4da8ff',fill:'rgba(30,80,200,0.22)',name:'Près',detail:'TWA 45° – 60° — Voiles très tendues'},
+  {from:60,to:75,color:'#64b5f6',fill:'rgba(30,100,210,0.18)',name:'Bon plein',detail:'TWA 60° – 75° — Voiles légèrement desserrées'},
+  {from:75,to:105,color:'#80cbc4',fill:'rgba(0,130,120,0.20)',name:'Travers',detail:'TWA ≈ 90° — Voiles mi-ouvertes, perp.'},
+  {from:105,to:140,color:'#ffcc80',fill:'rgba(200,100,0,0.20)',name:'Largue',detail:'TWA ≈ 120° — Voiles bien ouvertes'},
+  {from:140,to:165,color:'#ff8a65',fill:'rgba(190,60,15,0.22)',name:'Grand largue',detail:'TWA ≈ 150° — Voiles très ouvertes'},
+  {from:165,to:181,color:'#ef5350',fill:'rgba(150,20,10,0.22)',name:'Vent arrière',detail:'TWA 180° — Voiles complètement libres'},
+];
+const SECTORS_LIGHT=[
+  {from:0,to:45,color:'#b71c1c',fill:'rgba(220,30,30,0.18)',name:'Zone morte',detail:'Impossible — trop près du vent'},
+  {from:45,to:60,color:'#1565c0',fill:'rgba(21,101,192,0.16)',name:'Près',detail:'TWA 45° – 60° — Voiles très tendues'},
+  {from:60,to:75,color:'#1565c0',fill:'rgba(21,101,192,0.12)',name:'Bon plein',detail:'TWA 60° – 75° — Voiles légèrement desserrées'},
+  {from:75,to:105,color:'#00796b',fill:'rgba(0,121,107,0.16)',name:'Travers',detail:'TWA ≈ 90° — Voiles mi-ouvertes, perp.'},
+  {from:105,to:140,color:'#e65100',fill:'rgba(230,81,0,0.15)',name:'Largue',detail:'TWA ≈ 120° — Voiles bien ouvertes'},
+  {from:140,to:165,color:'#bf360c',fill:'rgba(191,54,12,0.18)',name:'Grand largue',detail:'TWA ≈ 150° — Voiles très ouvertes'},
+  {from:165,to:181,color:'#870000',fill:'rgba(140,20,10,0.18)',name:'Vent arrière',detail:'TWA 180° — Voiles complètement libres'},
+];
+const cards=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'];
+const toCard=d=>cards[Math.round(((d%360)+360)%360/22.5)%16];
+const getSec=t=>{const secs=isLight?SECTORS_LIGHT:SECTORS_DARK;for(let s of secs)if(t>=s.from&&t<s.to)return s;return secs[secs.length-1];};
+const d2r=d=>d*Math.PI/180,r2d=r=>r*180/Math.PI,norm=d=>((d%360)+360)%360;
+
+function getTWA(){let diff=boatHdg-windDir;diff=norm(diff);return{twa:Math.round(diff>180?360-diff:diff),side:diff<=180?'Tribord':'Babord',diff:Math.round(diff)};}
+
+// ---- Menu Paramètres ----
+function toggleSettings(){
+  const panel=document.getElementById('settings-panel');
+  const btn=document.getElementById('settings-toggle-btn');
+  const chev=document.getElementById('settings-chevron');
+  const isOpen=panel.classList.toggle('open');
+  btn.classList.toggle('open',isOpen);
+  chev.classList.toggle('open',isOpen);
+}
+
+// ── Theme toggle ──────────────────────────────────────
+function applyTheme(){
+  document.body.classList.toggle('light',isLight);
+  const btn=document.getElementById('theme-btn');
+  if(btn){btn.textContent=isLight?'🌙':'☀️';btn.title=isLight?'Passer en mode sombre':'Passer en mode clair';}
+  draw();
+}
+function toggleTheme(){
+  isLight=!isLight;
+  localStorage.setItem('theme',isLight?'light':'dark');
+  applyTheme();
+}
+
+// Status
+function setStatus(state,msg){
+  const cls='status-dot '+(state==='ok'?'connected':state==='wait'?'connecting':state==='err'?'error':'');
+  document.getElementById('sdot').className=cls;
+  const pd=document.getElementById('sdot-panel');if(pd)pd.className='status-dot-inline '+(state==='ok'?'connected':state==='wait'?'connecting':state==='err'?'error':'');
+  document.getElementById('stxt').textContent=msg;
+}
+
+function toggleConnect(){if(ws&&ws.readyState===WebSocket.OPEN){disconnect();}else{connect();}}
+function disconnect(){if(ws){ws.close();ws=null;}liveMode=liveWind=liveBoat=liveWS=false;document.getElementById('btn-conn').textContent='Connecter';setStatus('','Déconnecté');updateLiveBadges();}
+function setManualMode(){disconnect();manualMode=true;setStatus('','Mode manuel — glissez les flèches sur le disque');}
+
+function connect(){
+  const ip=document.getElementById('ip').value.trim();
+  const port=document.getElementById('port').value.trim()||'10110';
+  if(!ip){setStatus('err','Entrez l\'adresse IP du YDWG-02');return;}
+  manualMode=false;
+  setStatus('wait','Connexion à ws://'+ip+':'+port+' en cours...');
+  document.getElementById('btn-conn').textContent='Déconnecter';
+  try{
+    const proto=location.protocol==='https:'?'wss://':'ws://';
+    ws=new WebSocket(proto+ip+':'+port);
+    ws.onopen=()=>{liveMode=true;setStatus('ok','✅ Connecté au YDWG-02 — réception NMEA live');};
+    ws.onmessage=e=>{e.data.split('\n').forEach(l=>{if(l.trim())parseNMEA(l.trim());});};
+    ws.onerror=()=>{setStatus('err','❌ Connexion impossible — vérifiez IP, port et réseau WiFi');liveMode=false;document.getElementById('btn-conn').textContent='Connecter';};
+    ws.onclose=()=>{if(liveMode){setStatus('err','⚠️ Connexion perdue — reconnexion dans 5s...');setTimeout(connect,5000);}else{setStatus('','Déconnecté');document.getElementById('btn-conn').textContent='Connecter';}};
+  }catch(e){setStatus('err','WebSocket non supporté par ce navigateur');}
+}
+
+// NMEA Parser
+function logNMEA(line){logLines.unshift(line);if(logLines.length>20)logLines.pop();document.getElementById('log-content').innerHTML=logLines.map(l=>'<div>'+l+'</div>').join('');}
+
+function parseNMEA(line){
+  logNMEA(line);
+  // AIS sentences start with '!'
+  if(line.startsWith('!')){parseAISSentence(line);return;}
+  if(!line.startsWith('$'))return;
+  const p=line.split('*')[0].split(',');
+  const id=p[0].slice(1).toUpperCase();
+
+  // MWV — Wind Speed and Angle
+  if(id.endsWith('MWV')&&p.length>=5&&p[5]!=='V'){
+    const angle=parseFloat(p[1]),ref=p[2],spd=parseFloat(p[3]),unit=p[4];
+    if(isNaN(angle)||isNaN(spd))return;
+    let kts=spd;
+    if(unit==='M')kts=spd*1.944;else if(unit==='K')kts=spd*0.5399;
+    if(windSource==='nmea'){
+      if(ref==='T'&&(wk==='TWA'||wk==='TWD')){windDir=norm(boatHdg+angle);liveWind=true;}
+      if(ref==='R'&&(wk==='AWA'||wk==='AWD')){windDir=norm(boatHdg+angle);liveWind=true;}
+    }
+    // ── Capture AWA for the dedicated tile (always, regardless of selected source) ──
+    if(ref==='R'){
+      // MWV angle is 0-360 from bow; convert to signed: + = tribord, - = babord
+      awaAngle=Math.round(angle>180?angle-360:angle);
+      awaSpeed=Math.round(kts*10)/10;
+      liveAWA=true;
+      updateAWADisplay();
+    }
+    if(!liveWS||ref==='T'){setWS(kts,true);liveWS=true;}
+    if(liveWind&&windSource==='nmea'){draw();updateInfo();}
+  }
+  // VWR — Relative Wind Speed and Angle (alternate AWA sentence from some instruments)
+  if(id.endsWith('VWR')&&p.length>=9){
+    // $xxVWR,angle,L/R,spd_kts,N,spd_ms,M,spd_kmh,K
+    const rawAngle=parseFloat(p[1]),side=p[2],spd=parseFloat(p[3]);
+    if(!isNaN(rawAngle)&&!isNaN(spd)){
+      awaAngle=side==='L'?-rawAngle:rawAngle;
+      awaSpeed=Math.round(spd*10)/10;
+      liveAWA=true;
+      updateAWADisplay();
+    }
+  }
+  // MWD — Wind Direction and Speed absolute
+  if(id.endsWith('MWD')&&p.length>=6){
+    const dirT=parseFloat(p[1]),dirM=parseFloat(p[3]),kts=parseFloat(p[5]);
+    if(windSource==='nmea'){
+      if(!isNaN(dirT)&&wk==='TWD'){windDir=norm(dirT);liveWind=true;}
+      else if(!isNaN(dirM)&&wk==='TWD'){windDir=norm(dirM);liveWind=true;}
+    }
+    if(!isNaN(kts)){setWS(kts,true);liveWS=true;}
+    if(liveWind&&windSource==='nmea'){draw();updateInfo();}
+  }
+
+  // VHW — Speed Through Water ($xxVHW,hdg,T,hdg,M,stw,N,stw_km,K)
+  if(id.endsWith('VHW')&&p.length>=6){
+    const s=parseFloat(p[5]);
+    if(!isNaN(s)&&s>=0){stw=s;liveSTW=true;updateSpeedDisplay();}
+  }
+  // HDG
+  if(id.endsWith('HDG')&&p.length>=2){const h=parseFloat(p[1]);if(!isNaN(h)&&(bk==='HDG'||bk==='HDM')&&boatSource==='nmea'){boatHdg=norm(h);liveBoat=true;draw();updateInfo();}}
+  // HDT
+  if(id.endsWith('HDT')&&p.length>=2){const h=parseFloat(p[1]);if(!isNaN(h)&&bk==='HDT'&&boatSource==='nmea'){boatHdg=norm(h);liveBoat=true;draw();updateInfo();}}
+  // HDM
+  if(id.endsWith('HDM')&&p.length>=2){const h=parseFloat(p[1]);if(!isNaN(h)&&bk==='HDM'&&boatSource==='nmea'){boatHdg=norm(h);liveBoat=true;draw();updateInfo();}}
+  // VTG — COG + SOG ($xxVTG,cogT,T,cogM,M,sogN,N,sogK,K,A)
+  if(id.endsWith('VTG')&&p.length>=7){
+    const cogT=parseFloat(p[1]),cogM=parseFloat(p[3]),sogN=parseFloat(p[5]);
+    if(boatSource==='nmea'){
+      if(!isNaN(cogT)&&bk==='COG'){boatHdg=norm(cogT);liveBoat=true;draw();updateInfo();}
+      else if(!isNaN(cogM)&&bk==='COG'){boatHdg=norm(cogM);liveBoat=true;draw();updateInfo();}
+    }
+    if(!isNaN(sogN)&&sogN>=0){sog=sogN;liveSOG=true;updateSpeedDisplay();}
+  }
+  // RMC — SOG + COG ($xxRMC,time,status,lat,N,lon,W,sog,cog,...)
+  if(id.endsWith('RMC')&&p.length>=9&&p[2]==='A'){
+    const cog=parseFloat(p[8]),sogR=parseFloat(p[7]);
+    if(!isNaN(cog)&&bk==='COG'&&boatSource==='nmea'){boatHdg=norm(cog);liveBoat=true;draw();updateInfo();}
+    if(!isNaN(sogR)&&sogR>=0){sog=sogR;liveSOG=true;updateSpeedDisplay();}
+  }
+  // RPM — Engine RPM ($xxRPM,E,num,rpm,pitch,A)
+  if(id.endsWith('RPM')&&p.length>=4){
+    const rpm=parseFloat(p[3]);
+    if(!isNaN(rpm)&&rpm>=0){engineRpm=Math.round(rpm);liveEngine=true;updateEngineDisplay();}
+  }
+
+  // DPT — Depth Below Transducer ($xxDPT,depth,offset,max_range)
+  if(id.endsWith('DPT')&&p.length>=2){
+    const d=parseFloat(p[1]),offset=parseFloat(p[2])||0;
+    if(!isNaN(d)){depthM=Math.max(0,d+offset);liveDepth=true;updateDepthDisplay();}
+  }
+  // DBT — Depth Below Transducer legacy ($xxDBT,ft,f,m,M,fath,F)
+  if(id.endsWith('DBT')&&p.length>=4){
+    const dm=parseFloat(p[3]);
+    if(!isNaN(dm)){depthM=Math.max(0,dm);liveDepth=true;updateDepthDisplay();}
+  }
+
+  // MDA — Meteorological Composite (pression)
+  if(id.endsWith('MDA')&&baroSource==='nmea'){
+    const bar=parseFloat(p[3]),inHg=parseFloat(p[1]);
+    if(!isNaN(bar)&&bar>0.5&&bar<1.2){addBaroReading(bar*1000);liveBaroNmea=true;}
+    else if(!isNaN(inHg)&&inHg>20&&inHg<35){addBaroReading(inHg*33.8639);liveBaroNmea=true;}
+    updateBaroDisplay();
+  }
+
+  // XDR — Transducer multiplex (pression, gîte, tangage, heures moteur)
+  if(id.endsWith('XDR')){
+    for(let i=1;i+3<p.length;i+=4){
+      const type=p[i],val=parseFloat(p[i+1]),unit=p[i+2],name=(p[i+3]||'').toUpperCase();
+      // Pression baro
+      if(type==='P'&&!isNaN(val)&&unit==='B'&&val>0.5&&val<1.2&&baroSource==='nmea'){
+        addBaroReading(val*1000);liveBaroNmea=true;updateBaroDisplay();
+      }
+      // Angles (gîte, tangage) — type A, D ou pas d'unité
+      if(type==='A'&&!isNaN(val)){
+        const n2=name;
+        if(n2.includes('HEEL')||n2.includes('ROLL')||n2.includes('LIST')||
+           n2===''||n2.includes('BANK')){
+          heelDeg=Math.round(val*10)/10;liveHeel=true;updateHeelDisplay();
+        }
+        if(n2.includes('PITCH')||n2.includes('TRIM')){
+          pitchDeg=Math.round(val*10)/10;updateHeelDisplay();
+        }
+      }
+      // Certains instruments émettent le gîte en type 'G' ou sans type avec unité 'D'
+      if(type==='G'&&unit==='D'&&!isNaN(val)){
+        heelDeg=Math.round(val*10)/10;liveHeel=true;updateHeelDisplay();
+      }
+      // Heures moteur
+      if(type==='G'&&!isNaN(val)&&unit==='H'&&(name.includes('ENGINE')||name.includes('HOUR')||name.includes('MAIN')||name.includes('MOTEUR')||name==='')){
+        engineHours=val;liveEngine=true;updateEngineDisplay();
+      }
+    }
+  }
+
+  // RMC — position + SOG + COG propre
+  if(id.endsWith('RMC')&&p.length>=9&&p[2]==='A'){
+    const la=aisLatLon(p[3],p[4]),lo=aisLatLon(p[5],p[6]);
+    if(la!==null)ownLat=la;if(lo!==null)ownLon=lo;
+    const s=parseFloat(p[7]),c=parseFloat(p[8]);
+    if(!isNaN(s))ownSOG_gps=s;if(!isNaN(c))ownCOG_gps=c;
+    updateAISPanel();updateGPSPosDisplay();
+  }
+  // GGA — position GPS (complément)
+  if(id.endsWith('GGA')&&p.length>=7&&parseInt(p[6])>0){
+    const la=aisLatLon(p[2],p[3]),lo=aisLatLon(p[4],p[5]);
+    if(la!==null)ownLat=la;if(lo!==null)ownLon=lo;
+    updateAISPanel();
+  }
+
+  // ATT — Attitude ($xxATT,hdg,pitch,roll)
+  if((id.endsWith('ATT')||id==='TIATT')&&p.length>=4){
+    const roll=parseFloat(p[3]),pit=parseFloat(p[2]);
+    if(!isNaN(roll)){heelDeg=Math.round(roll*10)/10;liveHeel=true;}
+    if(!isNaN(pit)){pitchDeg=Math.round(pit*10)/10;}
+    if(liveHeel)updateHeelDisplay();
+  }
+  updateLiveBadges();
+}
+
+function updateAWADisplay(){
+  if(!liveAWA||awaAngle===null)return;
+  const absA=Math.abs(awaAngle);
+  const isTribord=awaAngle>=0;
+  const side=isTribord?'Tribord':'Babord';
+  // Theme-aware colors
+  const colSide=isTribord
+    ?(isLight?'#166534':'#2de88a')
+    :(isLight?'#b71c1c':'#ff7070');
+  const colAngle=isLight?'#c45000':'#ffd54f';
+
+  const big=document.getElementById('awa-angle-big');
+  const ang=document.getElementById('awa-angle-val');
+  const spd=document.getElementById('awa-speed-val');
+  const sv=document.getElementById('awa-side-val');
+  const st=document.getElementById('awa-side-txt');
+  const badge=document.getElementById('awa-live-badge');
+
+  if(big){big.textContent=absA+'°';big.style.color=colAngle;}
+  if(ang){ang.textContent=absA+'°';ang.style.color=colAngle;}
+  if(spd){spd.textContent=(awaSpeed!==null?Math.round(awaSpeed):'—')+' kts';spd.style.color=isLight?'#1356b4':'var(--wc)';}
+  if(sv){sv.textContent=side;sv.style.color=colSide;}
+  if(st){st.textContent=(isTribord?'⬆ ':'⬇ ')+side+' — '+absA+'°';st.style.color=colSide;}
+  if(badge)badge.style.display='inline-block';
+}
+
+function updateHeelDisplay(){
+  if(!liveHeel||heelDeg===null)return;
+  const abs=Math.abs(heelDeg);
+  const isTribord=heelDeg>0,isBabord=heelDeg<0;
+  const side=isTribord?'Tribord':isBabord?'Babord':'Droit';
+
+  // Color by intensity — adapted for both themes
+  let col,sideCol;
+  if(isLight){
+    col=abs>25?'#b71c1c':abs>15?'#c45000':abs>8?'#92400e':'#6d28d9';
+    sideCol=isTribord?'#166534':isBabord?'#b71c1c':'#6a85a8';
+  } else {
+    col=abs>25?'#ff4444':abs>15?'#e07020':abs>8?'#ffd54f':'#ce93d8';
+    sideCol=isTribord?'#2de88a':isBabord?'#ff7070':'#8aa8c8';
+  }
+
+  const big=document.getElementById('heel-big');
+  const hv=document.getElementById('heel-val');
+  const hs=document.getElementById('heel-side');
+  const pv=document.getElementById('pitch-val');
+  const st=document.getElementById('heel-side-txt');
+  const bar=document.getElementById('heel-bar');
+  const badge=document.getElementById('heel-live-badge');
+
+  if(big){big.textContent=abs.toFixed(1)+'°';big.style.color=col;}
+  if(hv){hv.textContent=abs.toFixed(1)+'°';hv.style.color=col;}
+  if(hs){hs.textContent=side;hs.style.color=sideCol;}
+  if(st){
+    const icon=isTribord?'↗':'↙';
+    st.textContent=icon+' '+side+' '+abs.toFixed(1)+'°';
+    st.style.color=col;
+  }
+  if(pv&&pitchDeg!==null){
+    const ptCol=isLight?'#2c4a70':'#8aa8c8';
+    pv.textContent=(pitchDeg>0?'+':'')+pitchDeg.toFixed(1)+'°';
+    pv.style.color=ptCol;
+  }
+  if(badge)badge.style.display='inline-block';
+  checkHeelAlarm();
+  if(bar){
+    const pct=Math.min(abs/40,1)*50;
+    bar.style.background=col;
+    if(isTribord){bar.style.left='50%';bar.style.right='auto';bar.style.width=pct+'%';}
+    else if(isBabord){bar.style.right='50%';bar.style.left='auto';bar.style.width=pct+'%';}
+    else{bar.style.left='50%';bar.style.width='0';}
+  }
+}
+
+function updateSpeedDisplay(){
+  const stwEl=document.getElementById('stw-val');
+  const sogEl=document.getElementById('sog-val');
+  const diffEl=document.getElementById('speed-diff');
+  const badge=document.getElementById('speed-live-badge');
+  const hasAny=liveSTW||liveSOG;
+  badge.style.display=hasAny?'inline-block':'none';
+  // STW
+  stwEl.textContent=liveSTW?stw.toFixed(1)+' kts':'— kts';
+  stwEl.style.color=liveSTW?'#0288D1':'#b0bcc8';
+  // STW big tile
+  const stwBig=document.getElementById('stw-big-val');
+  const stwSub=document.getElementById('stw-sub');
+  const stwBadge=document.getElementById('stw-live-badge');
+  if(stwBig){stwBig.textContent=liveSTW?stw.toFixed(1)+' kts':'— kts';stwBig.style.color=liveSTW?'#4da8ff':'var(--txt3)';}
+  if(stwSub&&liveSTW)stwSub.textContent='Vitesse fond eau (loch)';
+  if(stwBadge)stwBadge.style.display=liveSTW?'inline-block':'none';
+  // STW min/max
+  if(liveSTW){
+    if(stwMin===null||stw<stwMin)stwMin=stw;
+    if(stwMax===null||stw>stwMax)stwMax=stw;
+    const mmRow=document.getElementById('stw-minmax');
+    const minEl=document.getElementById('stw-min-val');
+    const maxEl=document.getElementById('stw-max-val');
+    if(mmRow)mmRow.style.display='flex';
+    if(minEl)minEl.textContent=stwMin.toFixed(1)+' kts';
+    if(maxEl)maxEl.textContent=stwMax.toFixed(1)+' kts';
+  }
+  // SOG
+  sogEl.textContent=liveSOG?sog.toFixed(1)+' kts':'— kts';
+  sogEl.style.color=liveSOG?'#1B6B3A':'#b0bcc8';
+  // Dérive : SOG - STW (courant)
+  if(liveSTW&&liveSOG){
+    const diff=sog-stw;
+    const adiff=Math.abs(diff);
+    diffEl.style.display='block';
+    if(adiff<0.2){
+      diffEl.textContent='≈ Pas de courant détecté';
+      diffEl.className='speed-diff zero';
+    } else if(diff>0){
+      diffEl.textContent='⬆ Courant favorable +'+diff.toFixed(1)+' kts (SOG > STW)';
+      diffEl.className='speed-diff pos';
+    } else {
+      diffEl.textContent='⬇ Courant contraire '+diff.toFixed(1)+' kts (STW > SOG)';
+      diffEl.className='speed-diff neg';
+    }
+  } else {
+    diffEl.style.display='none';
+  }
+}
+
+function updateEngineDisplay(){
+  const hEl=document.getElementById('engine-hours-val');
+  const rEl=document.getElementById('engine-rpm-val');
+  const stEl=document.getElementById('engine-state-val');
+  const stSub=document.getElementById('engine-state-sub');
+  const srcSt=document.getElementById('engine-src-st');
+  if(!liveEngine){return;}
+  srcSt.className='src-status ok';srcSt.textContent='✅ NMEA reçu';
+  // Heures
+  if(engineHours!==null){
+    const h=Math.floor(engineHours),m=Math.round((engineHours-h)*60);
+    hEl.textContent=h+'h'+(m>0?m+'m':'');
+    hEl.className='engine-item-val live';
+  }
+  // RPM
+  if(engineRpm!==null){
+    rEl.textContent=engineRpm+' tr/min';
+    rEl.className='engine-item-val live';
+    // État moteur
+    if(engineRpm===0){stEl.textContent='⛔ Arrêté';stSub.textContent='Moteur à l\'arrêt';}
+    else if(engineRpm<800){stEl.textContent='🔄 Ralenti';stSub.textContent='Régime de ralenti';}
+    else if(engineRpm<2000){stEl.textContent='✅ Marche';stSub.textContent='Régime normal';}
+    else if(engineRpm<3000){stEl.textContent='⚡ Fort';stSub.textContent='Régime élevé';}
+    else{stEl.textContent='🚨 Max';stSub.textContent='Régime maximum';}
+    stEl.className='engine-item-val live';
+  }
+}
+
+function updateDepthDisplay(){
+  const valEl=document.getElementById('depth-val');
+  const margEl=document.getElementById('depth-margin');
+  const banner=document.getElementById('depth-alert-banner');
+  if(depthM===null){valEl.textContent='— m';margEl.textContent='En attente NMEA (DPT)…';margEl.className='depth-margin';return;}
+  const margin=depthM-draft;
+  valEl.textContent=depthM.toFixed(1)+' m';
+  document.getElementById('depth-live-badge').style.display='inline-block';
+  if(margin<0){
+    valEl.className='depth-val danger';
+    margEl.textContent='⛔ Marge : '+margin.toFixed(1)+' m — DANGER !';
+    margEl.className='depth-margin danger';
+  } else if(margin<1){
+    valEl.className='depth-val warn';
+    margEl.textContent='⚠️ Marge : '+margin.toFixed(1)+' m — FAIBLE';
+    margEl.className='depth-margin warn';
+  } else {
+    valEl.className='depth-val';
+    margEl.textContent='✅ Marge : '+margin.toFixed(1)+' m';
+    margEl.className='depth-margin ok';
+  }
+  // Alert banner
+  if(depthAlertOn&&margin<1){
+    document.getElementById('depth-alert-title').textContent=(margin<0?'🆘 DANGER — FOND IMMINENT !':'⚠️ FAIBLE PROFONDEUR');
+    document.getElementById('depth-alert-sub').textContent=
+      'Profondeur : '+depthM.toFixed(1)+' m  |  Tirant d\'eau : '+draft.toFixed(2)+' m  |  Marge : '+margin.toFixed(2)+' m';
+    banner.style.display='flex';
+  } else {
+    banner.style.display='none';
+  }
+}
+
+function toggleDepthAlert(){
+  depthAlertOn=!depthAlertOn;
+  const btn=document.getElementById('depth-alert-btn');
+  btn.textContent=depthAlertOn?'🔔 Alerte ON':'🔕 Alerte OFF';
+  btn.className='depth-alert-btn '+(depthAlertOn?'active':'muted');
+  if(!depthAlertOn)document.getElementById('depth-alert-banner').style.display='none';
+  else updateDepthDisplay();
+}
+
+// Tirant d'eau
+document.getElementById('draft-input').addEventListener('input',e=>{
+  draft=Math.max(0.1,parseFloat(e.target.value)||1.8);
+  document.getElementById('draft-badge').textContent='T.E. = '+draft.toFixed(2)+' m';
+  document.getElementById('depth-draft-info').textContent='Tirant d\'eau : '+draft.toFixed(2)+' m — alerte si marge < 1 m';
+  updateDepthDisplay();
+});
+
+function updateLiveBadges(){
+  const _s=(id,v)=>{const e=document.getElementById(id);if(e)e.style.display=v?'inline-block':'none';};
+  _s('wd-live-badge',liveWind);_s('bd-live-badge',liveBoat);_s('ws-live-badge',liveWS);
+  _s('speed-live-badge',liveSOG||liveSTW);_s('stw-live-badge',liveSTW);_s('cog-live-badge',ownCOG_gps!==null);
+  _s('depth-live-badge',liveDepth);_s('baro-live-badge',baroHpa!==null);
+  _s('awa-live-badge',liveAWA);_s('gps-pos-badge',ownLat!==null);
+  document.getElementById('depth-live-badge').style.display=liveDepth?'inline-block':'none';
+  document.getElementById('baro-live-badge').style.display=(baroHpa!==null)?'inline-block':'none';
+  updateSrcStatus();
+  // Topbar badges
+  const tw=document.getElementById('topbar-wind-src');
+  const tb=document.getElementById('topbar-boat-src');
+  if(tw)tw.textContent=wk+(windSource==='manual'?' ✋':liveWind?' 📡':'');
+  if(tb)tb.textContent=bk+(boatSource==='manual'?' ✋':liveBoat?' 📡':'');
+}
+
+// Wind speed
+function bft(k){
+  if(k<1)return'Bf 0 — Calme';if(k<4)return'Bf 1 — Très légère';
+  if(k<7)return'Bf 2 — Légère brise';if(k<11)return'Bf 3 — Petite brise';
+  if(k<17)return'Bf 4 — Jolie brise';if(k<22)return'Bf 5 — Bonne brise';
+  if(k<28)return'Bf 6 — Vent frais';if(k<34)return'Bf 7 — Grand frais';
+  if(k<41)return'Bf 8 — Coup de vent';if(k<48)return'Bf 9 — Fort coup de vent';
+  if(k<56)return'Bf 10 — Tempête';if(k<64)return'Bf 11 — Violente tempête';
+  return'Bf 12 — Ouragan';
+}
+function setWS(v,fromLive){
+  tws=Math.max(0,Math.min(70,Math.round(parseFloat(v)||0)));
+  document.getElementById('wspeed').value=tws;document.getElementById('wslider').value=tws;
+  const el=document.getElementById('bft');el.textContent=bft(tws);
+  const twsBig=document.getElementById('tws-big');if(twsBig)twsBig.textContent=tws+' kts';
+  if(tws<11){el.style.background='rgba(31,173,107,0.2)';el.style.color='#1fad6b';}
+  else if(tws<22){el.style.background='rgba(45,125,210,0.2)';el.style.color='#4da8ff';}
+  else if(tws<28){el.style.background='rgba(224,200,0,0.15)';el.style.color='#e0c820';}
+  else if(tws<34){el.style.background='rgba(224,112,32,0.2)';el.style.color='#e07020';}
+  else if(tws<48){el.style.background='rgba(208,48,48,0.2)';el.style.color='#d03030';}
+  else{el.style.background='rgba(140,10,10,0.3)';el.style.color='#ff4444';}
+  updateSailConfig();
+}
+document.getElementById('wspeed').addEventListener('input',e=>{if(!liveWS)setWS(e.target.value);});
+document.getElementById('wslider').addEventListener('input',e=>{if(!liveWS)setWS(e.target.value);});
+setWS(15);
+
+// Sail config — angles corrigés selon référentiel
+function getSailConfig(twa,tws){
+  if(twa<45)return{voiles:[],warning:'🚫 Zone morte — virer de bord ou empanner.',color:'#E53935'};
+  // Près (45–60°) : voiles très tendues, presque dans l'axe
+  if(twa<60){
+    if(tws<=8) return{voiles:['GV pleine — axe','Génois N°1 bordé à bloc'],warning:'Vent léger — bien border',color:'#1565C0'};
+    if(tws<=15) return{voiles:['GV pleine — axe','Génois N°1 bordé'],warning:'',color:'#1565C0'};
+    if(tws<=22) return{voiles:['GV (1 ris poss.) — axe','Génois N°2 bordé'],warning:'Surveiller la gîte',color:'#1565C0'};
+    if(tws<=28) return{voiles:['GV 1 ris — axe','Solent ou Génois N°2'],warning:'⚠️ Ris obligatoire',color:'#1565C0'};
+    if(tws<=34) return{voiles:['GV 2 ris — axe','Solent ou Foc N°3'],warning:'⚠️ Navigation difficile',color:'#1565C0'};
+    if(tws<=48) return{voiles:['GV 2-3 ris','Foc de tempête'],warning:'🚨 Coup de vent',color:'#E64A19'};
+    return{voiles:['Tourmentin seul'],warning:'🆘 Tempête — cape sèche',color:'#E53935'};
+  }
+  // Bon plein (60–75°) : voiles légèrement desserrées
+  if(twa<75){
+    if(tws<=8) return{voiles:['GV pleine','Génois N°1 légèrement choqué'],warning:'',color:'#1976D2'};
+    if(tws<=15) return{voiles:['GV pleine','Génois N°1'],warning:'',color:'#1976D2'};
+    if(tws<=22) return{voiles:['GV pleine','Génois N°1 ou N°2'],warning:'',color:'#1976D2'};
+    if(tws<=28) return{voiles:['GV 1 ris','Génois N°2'],warning:'',color:'#1976D2'};
+    if(tws<=34) return{voiles:['GV 1-2 ris','Génois réduit ou Solent'],warning:'⚠️ Réduire',color:'#1976D2'};
+    if(tws<=48) return{voiles:['GV 2-3 ris','Trinquette'],warning:'🚨 Coup de vent',color:'#E64A19'};
+    return{voiles:['GV 3 ris + tourmentin'],warning:'🆘 Tempête',color:'#E53935'};
+  }
+  // Travers (75–105° ≈ 90°) : voiles mi-ouvertes, perpendiculaires
+  if(twa<105){
+    if(tws<=8) return{voiles:['GV pleine','Gennaker conseillé'],warning:'',color:'#00897B'};
+    if(tws<=15) return{voiles:['GV pleine','Gennaker possible'],warning:'',color:'#00897B'};
+    if(tws<=22) return{voiles:['GV pleine — mi-ouverte','Gennaker avec précaution'],warning:'',color:'#00897B'};
+    if(tws<=28) return{voiles:['GV 1 ris — perp.','Génois N°1'],warning:'Gennaker à éviter',color:'#00897B'};
+    if(tws<=34) return{voiles:['GV 1 ris','Génois N°2'],warning:'⚠️ Surveiller les risées',color:'#00897B'};
+    if(tws<=48) return{voiles:['GV 1-2 ris','Génois réduit'],warning:'🚨 Coup de vent',color:'#E64A19'};
+    return{voiles:['GV 3 ris','Foc tempête'],warning:'🆘 Tempête',color:'#E53935'};
+  }
+  // Largue (105–140° ≈ 120°) : voiles bien ouvertes
+  if(twa<140){
+    if(tws<=8) return{voiles:['GV pleine — bien ouverte','Gennaker ou Spi asym.'],warning:'',color:'#F57C00'};
+    if(tws<=15) return{voiles:['GV pleine — bien ouverte','Gennaker ou Spi asym.'],warning:'',color:'#F57C00'};
+    if(tws<=22) return{voiles:['GV pleine — bien ouverte','Gennaker ou Spi asym.'],warning:'',color:'#F57C00'};
+    if(tws<=28) return{voiles:['GV pleine','Génois N°1'],warning:'Spi déconseillé',color:'#F57C00'};
+    if(tws<=34) return{voiles:['GV 1 ris','Génois N°2'],warning:'⚠️ Pas de spi',color:'#F57C00'};
+    if(tws<=48) return{voiles:['GV 1-2 ris','Foc réduit'],warning:'🚨 Coup de vent',color:'#E64A19'};
+    return{voiles:['GV 3 ris','Trinquette'],warning:'🆘 Tempête',color:'#E53935'};
+  }
+  // Grand largue (140–165° ≈ 150°) : voiles très ouvertes
+  if(twa<165){
+    if(tws<=8) return{voiles:['GV pleine — très ouverte','Spi symétrique + Tangon'],warning:'',color:'#BF360C'};
+    if(tws<=15) return{voiles:['GV pleine — très ouverte','Spi symétrique + Tangon'],warning:'',color:'#BF360C'};
+    if(tws<=22) return{voiles:['GV pleine — très ouverte','Spi symétrique + Tangon'],warning:'',color:'#BF360C'};
+    if(tws<=28) return{voiles:['GV pleine','Spi asym. lesté'],warning:'Spi sym. déconseillé',color:'#BF360C'};
+    if(tws<=34) return{voiles:['GV 1 ris','Foc réduit'],warning:'⚠️ Spi déconseillé',color:'#BF360C'};
+    if(tws<=48) return{voiles:['GV 1-2 ris','Foc tempête'],warning:'🚨 Coup de vent',color:'#E64A19'};
+    return{voiles:['GV 3 ris + tourmentin'],warning:'🆘 Tempête — fuite sécu',color:'#E53935'};
+  }
+  // Vent arrière (165–180°) : voiles complètement libres
+  if(tws<=22) return{voiles:['GV pleine — libre','Spi symétrique','Tangon au vent'],warning:'Attention empannage',color:'#BF360C'};
+  if(tws<=34) return{voiles:['GV pleine — libre','Spi asym. ou réduit'],warning:'⚠️ Empannage à surveiller',color:'#BF360C'};
+  if(tws<=48) return{voiles:['GV 1 ris','Foc seul'],warning:'🚨 Coup de vent — voilure réduite',color:'#E64A19'};
+  return{voiles:['Tourmentin seul','ou GV 3 ris + tourmentin'],warning:'🆘 Tempête — cape ou fuite',color:'#E53935'};
+}
+
+// ── Génois écoutes config selon allure ──
+function getGenoisSheetConfig(twa,tws){
+  // Zone morte ou quasi-morte
+  if(twa<45) return{
+    etat:'🚫 Génois inutilisable',
+    color:'#E53935',
+    items:[
+      {icon:'🔴',label:'Écoute au vent',val:'Choquée — génois masqué'},
+      {icon:'🔴',label:'Écoute sous le vent',val:'Libre — fasseye inévitable'},
+      {icon:'ℹ️',label:'Conseil',val:'Virer de bord ou empanner'},
+    ]
+  };
+  // Près (45–60°)
+  if(twa<60) return{
+    etat:'⬆️ Près — voile très bordée',
+    color:'#1565C0',
+    items:[
+      {icon:'🔵',label:'Point d\'écoute',val:'Positionner très en arrière (gîte à bord)'},
+      {icon:'🔵',label:'Tension écoute',val:'Borde à bloc — feuillu plat'},
+      {icon:'🔵',label:'Chariot écoute',val:'Au centre ou légèrement sous le vent'},
+      {icon:'🔵',label:'Point d\'amure',val:'Rentrer au max — chute tendue'},
+      {icon:'💡',label:'Réglage fin',val:tws<=15?'Vent léger : border l\'écoute doucement':'Vent fort : surveiller la gîte, choquer si >'+tws+'kts'},
+    ]
+  };
+  // Bon plein (60–75°)
+  if(twa<75) return{
+    etat:'↗️ Bon plein — légèrement desserré',
+    color:'#1976D2',
+    items:[
+      {icon:'🔵',label:'Point d\'écoute',val:'Arrière du rail — légèrement sorti'},
+      {icon:'🔵',label:'Tension écoute',val:'Borde, mais chute légèrement fuyante'},
+      {icon:'🔵',label:'Chariot écoute',val:'Légèrement sous le vent du centre'},
+      {icon:'🔵',label:'Pénon extrados',val:'Doit voler horizontalement'},
+      {icon:'💡',label:'Conseil',val:'Choquer légèrement si pénon intrados fasseye'},
+    ]
+  };
+  // Travers (75–105°)
+  if(twa<105) return{
+    etat:'➡️ Travers — mi-ouvert',
+    color:'#00897B',
+    items:[
+      {icon:'🟢',label:'Point d\'écoute',val:'Milieu du rail — sortir environ 30–40%'},
+      {icon:'🟢',label:'Tension écoute',val:'Détendue — profil gonflé'},
+      {icon:'🟢',label:'Chariot écoute',val:'Légèrement sous le vent'},
+      {icon:'🟢',label:'Angle génois',val:'Perpendiculaire au vent ≈ 90°'},
+      {icon:'💡',label:'Conseil',val:'Si gennaker : border les écoutes symétriquement'},
+    ]
+  };
+  // Largue (105–140°)
+  if(twa<140) return{
+    etat:'↘️ Largue — bien ouvert',
+    color:'#F57C00',
+    items:[
+      {icon:'🟠',label:'Point d\'écoute',val:'Avant du rail — sortir 50–60%'},
+      {icon:'🟠',label:'Tension écoute',val:'Choquée — voile bien gonflée'},
+      {icon:'🟠',label:'Chariot écoute',val:'Côté au vent ou neutre'},
+      {icon:'🟠',label:'Guy/Tangon',val:tws<=22?'Gennaker : écoute de barber-hauler':'Non applicable — vent fort'},
+      {icon:'💡',label:'Conseil',val:'Utiliser spi asym. si TWS < 22 kts — bien border les barber-haulers'},
+    ]
+  };
+  // Grand largue (140–165°)
+  if(twa<165) return{
+    etat:'⬇️ Grand largue — très ouvert',
+    color:'#BF360C',
+    items:[
+      {icon:'🔴',label:'Point d\'écoute',val:'Avant max du rail — max sorti'},
+      {icon:'🔴',label:'Tension écoute',val:'Très choquée — voile libre'},
+      {icon:'🔴',label:'Tangon de spi',val:tws<=22?'Barrer le spi sym. avec tangon au vent':'Éviter spi — vent trop fort'},
+      {icon:'🔴',label:'Anti-empannage',val:'Vang bordé — prévenir empannage involontaire'},
+      {icon:'💡',label:'Conseil',val:'Risque d\'empannage — surveiller en permanence la GV'},
+    ]
+  };
+  // Vent arrière (165–180°)
+  return{
+    etat:'⬇️ Vent arrière — voile libre',
+    color:'#870000',
+    items:[
+      {icon:'🔴',label:'Génois',val:tws<=22?'Tangon au vent — border côté opposé à la GV':'Génois inefficace — foc seul'},
+      {icon:'🔴',label:'Tangon',val:tws<=22?'Tangon perpendiculaire au vent':'Pas de tangon — vent trop fort'},
+      {icon:'🔴',label:'Écoute sous vent',val:'Choquée à fond — voile perpend.'},
+      {icon:'🔴',label:'Anti-empannage',val:'Obligatoire — vang et bras bien réglés'},
+      {icon:'💡',label:'Conseil',val:'Navigation papillon possible — GV côté bâbord, spi/génois côté tribord'},
+    ]
+  };
+}
+
+function updateSailConfig(){
+  const{twa,side}=getTWA();const s=getSec(twa);const cfg=getSailConfig(twa,tws);
+  document.getElementById('sail-allure').textContent=twa<40?'🚫 Zone morte':s.name+(twa>0&&twa<180?' — '+side:'');
+  document.getElementById('sail-allure').style.color=cfg.color||s.color;
+  const C=[{bg:'rgba(45,125,210,0.2)',fg:'#90caf9'},{bg:'rgba(31,173,107,0.18)',fg:'#80cbc4'},{bg:'rgba(224,112,32,0.18)',fg:'#ffcc80'},{bg:'rgba(155,89,182,0.2)',fg:'#ce93d8'},{bg:'rgba(239,83,80,0.18)',fg:'#ef9a9a'}];
+  document.getElementById('sail-config').innerHTML=cfg.voiles.map((v,i)=>'<span class="sail-tag" style="background:'+C[i%C.length].bg+';color:'+C[i%C.length].fg+'">'+v+'</span>').join('');
+  document.getElementById('sail-warning').textContent=cfg.warning||'';
+  // ── Update génois panel ──
+  const gp=document.getElementById('genois-panel-content');
+  if(gp){
+    const gc=getGenoisSheetConfig(twa,tws);
+    const rows=gc.items.map(it=>'<div style="display:flex;align-items:baseline;gap:6px;padding:4px 0;border-bottom:1px solid var(--border);">'
+      +'<span style="font-size:13px;flex-shrink:0;">'+it.icon+'</span>'
+      +'<span style="font-size:10px;font-weight:700;color:var(--txt2);min-width:110px;flex-shrink:0;">'+it.label+'</span>'
+      +'<span style="font-size:10px;color:var(--txt);flex:1;">'+it.val+'</span>'
+      +'</div>').join('');
+    gp.innerHTML='<div style="margin-bottom:6px;padding:4px 8px;border-radius:6px;background:'+gc.color+'22;border:1px solid '+gc.color+'55;">'
+      +'<span style="font-size:11px;font-weight:700;color:'+gc.color+'">'+gc.etat+'</span></div>'
+      +rows;
+  }
+}
+
+// Canvas
+function resize(){
+  const vw=window.visualViewport?window.visualViewport.width:window.innerWidth;
+  const sz=Math.min(vw-24,480);
+  cv.width=sz;cv.height=sz;CX=sz/2;CY=sz/2;R=sz*0.355;Ri=sz*0.12;
+  draw();updateInfo();
+}
+
+function drawDisc(){
+  ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);ctx.fillStyle=isLight?'#f0f6ff':'#081628';ctx.fill();
+  const base=d2r(windDir-90);
+  (isLight?SECTORS_LIGHT:SECTORS_DARK).forEach(s=>[1,-1].forEach(sign=>{
+    ctx.save();ctx.globalAlpha=0.75;ctx.beginPath();ctx.moveTo(CX,CY);
+    const a1=base+d2r(sign*s.from),a2=base+d2r(sign*s.to);
+    ctx.arc(CX,CY,R,sign>0?a1:a2,sign>0?a2:a1);
+    ctx.closePath();ctx.fillStyle=s.fill;ctx.fill();ctx.restore();
+  }));
+  [40,60,90,120,150,170,180].forEach(a=>[a,-a].forEach(deg=>{
+    const rad=base+d2r(deg);ctx.beginPath();ctx.moveTo(CX,CY);
+    ctx.lineTo(CX+R*Math.cos(rad),CY+R*Math.sin(rad));
+    ctx.strokeStyle=isLight?'rgba(0,60,160,0.10)':'rgba(100,180,255,0.12)';ctx.lineWidth=1;ctx.stroke();
+  }));
+  ctx.beginPath();ctx.arc(CX,CY,R,0,Math.PI*2);ctx.strokeStyle=isLight?'rgba(0,60,160,0.2)':'rgba(80,150,220,0.25)';ctx.lineWidth=2;ctx.stroke();
+  ctx.beginPath();ctx.arc(CX,CY,Ri,0,Math.PI*2);ctx.strokeStyle='rgba(80,150,220,0.15)';ctx.lineWidth=1;ctx.setLineDash([3,4]);ctx.stroke();ctx.setLineDash([]);
+  const fs=Math.max(9,R*0.065);
+  (isLight?[{mid:20,r:R-R*.18,l:'Zone morte',c:'#b71c1c'},{mid:52,r:R-R*.13,l:'Près',c:'#1565c0'},{mid:67,r:R-R*.13,l:'Bon plein',c:'#1565c0'},{mid:90,r:R-R*.13,l:'Travers',c:'#00796b'},{mid:122,r:R-R*.13,l:'Largue',c:'#e65100'},{mid:152,r:R-R*.13,l:'Gd largue',c:'#bf360c'},{mid:175,r:R-R*.09,l:'Arr.',c:'#870000'}]:[{mid:20,r:R-R*.18,l:'Zone morte',c:'#ff6666'},{mid:52,r:R-R*.13,l:'Près',c:'#90caf9'},{mid:67,r:R-R*.13,l:'Bon plein',c:'#64b5f6'},{mid:90,r:R-R*.13,l:'Travers',c:'#80cbc4'},{mid:122,r:R-R*.13,l:'Largue',c:'#ffcc80'},{mid:152,r:R-R*.13,l:'Gd largue',c:'#ff8a65'},{mid:175,r:R-R*.09,l:'Arr.',c:'#ef9a9a'}]).forEach(l=>[1,-1].forEach(sign=>{
+    const rad=base+d2r(sign*l.mid);
+    ctx.save();ctx.font='600 '+fs+'px sans-serif';ctx.fillStyle=l.c;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(l.l,CX+l.r*Math.cos(rad),CY+l.r*Math.sin(rad));ctx.restore();
+  }));
+  for(let a=0;a<360;a+=30){
+    const rad=d2r(a-90+compassOffset);
+    ctx.beginPath();ctx.moveTo(CX+(R+2)*Math.cos(rad),CY+(R+2)*Math.sin(rad));ctx.lineTo(CX+(R+11)*Math.cos(rad),CY+(R+11)*Math.sin(rad));
+    ctx.strokeStyle=isLight?'#8aaacc':'#3a6090';ctx.lineWidth=1.2;ctx.stroke();
+    ctx.font=Math.max(9,R*.058)+'px sans-serif';ctx.fillStyle=isLight?'#4a6090':'#4a7aaa';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(a+'°',CX+(R+23)*Math.cos(rad),CY+(R+23)*Math.sin(rad));
+  }
+  for(let a=0;a<360;a+=10){
+    if(a%30===0)continue;const rad=d2r(a-90+compassOffset);
+    ctx.beginPath();ctx.moveTo(CX+(R+2)*Math.cos(rad),CY+(R+2)*Math.sin(rad));ctx.lineTo(CX+(R+6)*Math.cos(rad),CY+(R+6)*Math.sin(rad));
+    ctx.strokeStyle=isLight?'#aabbcc':'#2a4060';ctx.lineWidth=0.7;ctx.stroke();
+  }
+  ['N','E','S','O'].forEach((l,i)=>{
+    const rad=d2r(i*90-90+compassOffset);ctx.font='700 '+Math.max(12,R*.08)+'px sans-serif';
+    ctx.fillStyle=l==='N'?'#d03030':(isLight?'#1a2a4a':'#c0d4ec');ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(l,CX+(R+38)*Math.cos(rad),CY+(R+38)*Math.sin(rad));
+  });
+  const lbR=R*0.60;
+  ctx.font='700 '+Math.max(10,R*.072)+'px sans-serif';
+  ctx.fillStyle=WD[wk].c;ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(wk,CX+lbR*Math.cos(d2r(windDir-90)),CY+lbR*Math.sin(d2r(windDir-90)));
+  ctx.fillStyle=BD[bk].c;
+  ctx.fillText(bk,CX+lbR*Math.cos(d2r(boatHdg-90)),CY+lbR*Math.sin(d2r(boatHdg-90)));
+  if(liveMode){
+    ctx.beginPath();ctx.arc(CX+R-8,CY-R+8,6,0,Math.PI*2);
+    ctx.fillStyle=(liveWind||liveBoat)?'#2E7D32':'#F57C00';ctx.fill();
+    ctx.font='bold 8px sans-serif';ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText((liveWind||liveBoat)?'L':'W',CX+R-8,CY-R+8);
+  }
+}
+
+function drawWindArrow(){
+  const c=WD[wk].c,rad=d2r(windDir-90);
+  const ox=CX+(R-R*.06)*Math.cos(rad),oy=CY+(R-R*.06)*Math.sin(rad);
+  const ix=CX+Ri*Math.cos(rad),iy=CY+Ri*Math.sin(rad);
+  ctx.beginPath();ctx.moveTo(ox,oy);ctx.lineTo(ix,iy);ctx.strokeStyle=c;ctx.lineWidth=3.5;ctx.stroke();
+  const ir=d2r(windDir-90+180);
+  ctx.beginPath();ctx.moveTo(ix+13*Math.cos(ir),iy+13*Math.sin(ir));
+  ctx.lineTo(ix+7*Math.cos(d2r(windDir-90+90)),iy+7*Math.sin(d2r(windDir-90+90)));
+  ctx.lineTo(ix+7*Math.cos(d2r(windDir-90-90)),iy+7*Math.sin(d2r(windDir-90-90)));
+  ctx.closePath();ctx.fillStyle=c;ctx.fill();
+  const hr=Math.max(14,R*.08);
+  ctx.beginPath();ctx.arc(ox,oy,hr,0,Math.PI*2);ctx.fillStyle=c;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
+  ctx.font='bold '+Math.max(12,hr*.85)+'px sans-serif';ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('🌬',ox,oy+1);
+  ctx.font='700 '+Math.max(9,R*.055)+'px sans-serif';ctx.fillStyle=c;
+  ctx.fillText(tws+'kts',CX+(R+40)*Math.cos(d2r(windDir-90-9)),CY+(R+40)*Math.sin(d2r(windDir-90-9)));
+}
+
+function drawBoatArrow(){
+  const c=BD[bk].c,rad=d2r(boatHdg-90);
+  const ix=CX+Ri*Math.cos(rad),iy=CY+Ri*Math.sin(rad);
+  const ox=CX+(R-R*.06)*Math.cos(rad),oy=CY+(R-R*.06)*Math.sin(rad);
+  ctx.beginPath();ctx.moveTo(ix,iy);ctx.lineTo(ox,oy);ctx.strokeStyle=c;ctx.lineWidth=3.5;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(ox+13*Math.cos(rad),oy+13*Math.sin(rad));
+  ctx.lineTo(ox+7*Math.cos(d2r(boatHdg-90+90)),oy+7*Math.sin(d2r(boatHdg-90+90)));
+  ctx.lineTo(ox+7*Math.cos(d2r(boatHdg-90-90)),oy+7*Math.sin(d2r(boatHdg-90-90)));
+  ctx.closePath();ctx.fillStyle=c;ctx.fill();
+  const hr=Math.max(14,R*.08);
+  ctx.beginPath();ctx.arc(ox,oy,hr,0,Math.PI*2);ctx.fillStyle=c;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
+  ctx.font=Math.max(12,hr*.85)+'px sans-serif';ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('⛵',ox,oy+1);
+}
+
+function drawTWAarc(){
+  const{twa,diff}=getTWA();if(twa===0||twa===180)return;
+  const wr=d2r(windDir-90),br=d2r(boatHdg-90),ar=Ri-10,ccw=diff>180;
+  ctx.beginPath();ctx.arc(CX,CY,ar,wr,br,ccw);ctx.strokeStyle='#F57C00';ctx.lineWidth=2.5;ctx.setLineDash([5,3]);ctx.stroke();ctx.setLineDash([]);
+  let mr;if(!ccw)mr=wr+(br-wr)/2;else{const sp=(wr-br+Math.PI*2)%(Math.PI*2);mr=br+sp/2;}
+  ctx.font='700 '+Math.max(11,R*.07)+'px sans-serif';ctx.fillStyle='#E65100';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(twa+'°',CX+(ar-15)*Math.cos(mr),CY+(ar-15)*Math.sin(mr));
+}
+
+function drawBoatCenter(){
+  ctx.save();ctx.translate(CX,CY);ctx.rotate(d2r(boatHdg));
+  const s=R*.13;ctx.beginPath();
+  ctx.moveTo(0,-s*1.2);ctx.lineTo(s*.6,s);ctx.lineTo(0,s*.55);ctx.lineTo(-s*.6,s);
+  ctx.closePath();ctx.fillStyle=isLight?'#1a2a4a':'#c0d4ec';ctx.fill();ctx.strokeStyle=isLight?'rgba(0,0,0,0.3)':'rgba(255,255,255,0.3)';ctx.lineWidth=1.5;ctx.stroke();ctx.restore();
+}
+
+function draw(){
+  ctx.clearRect(0,0,cv.width,cv.height);
+  drawDisc();drawTWAarc();drawLoferAbattreArrows();drawWindArrow();drawBoatArrow();drawBoatCenter();
+  ctx.beginPath();ctx.arc(CX,CY,R*.085,0,Math.PI*2);ctx.fillStyle=isLight?'#f0f6ff':'#081628';ctx.fill();
+  ctx.strokeStyle='rgba(80,150,220,0.15)';ctx.lineWidth=1;ctx.stroke();
+}
+
+// ── Lofer / Abattre arc-arrows on the boat heading line ──────
+function drawLoferAbattreArrows(){
+  const{twa,side}=getTWA();
+  if(twa<3||twa>177)return; // skip zone morte and dead-run edges
+
+  const boatRad=d2r(boatHdg-90);
+  const isStarboard=side==='Tribord';
+  // Starboard: luff = turn toward wind = counterclockwise on canvas → sign -1
+  // Port:      luff = turn toward wind = clockwise on canvas → sign +1
+  const loferSign=isStarboard?-1:1;
+  const spread=d2r(26);           // arc angular span per arrow
+  const arcR=R*0.78;              // radius of the arrow arcs (inside the disc)
+  const asz=Math.max(8,R*0.052);  // arrowhead size
+  const fs='bold '+Math.max(10,R*.058)+'px sans-serif';
+  const lrOff=Math.max(18,R*0.10);// label radial offset beyond arc
+
+  // ── Lofer arc (green) — curves toward wind ──
+  const loferEnd=boatRad+loferSign*spread;
+  const loferCCW=loferSign<0;
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(CX,CY,arcR,boatRad,loferEnd,loferCCW);
+  ctx.strokeStyle='#2de88a';ctx.lineWidth=3.5;ctx.lineCap='round';ctx.stroke();
+  // arrowhead at tip
+  const loferTan=loferEnd+(loferCCW?Math.PI/2:-Math.PI/2); // tangent direction (forward along arc)
+  const lx=CX+arcR*Math.cos(loferEnd),ly=CY+arcR*Math.sin(loferEnd);
+  _arrowHead(lx,ly,loferTan,asz,'#2de88a');
+  // label
+  const lmid=boatRad+loferSign*spread*1.6;
+  ctx.font=fs;ctx.fillStyle='#2de88a';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('Lofer',CX+(arcR+lrOff)*Math.cos(lmid),CY+(arcR+lrOff)*Math.sin(lmid));
+  ctx.restore();
+
+  // ── Abattre arc (red) — curves away from wind ──
+  const abattreEnd=boatRad-loferSign*spread;
+  const abattreCCW=!loferCCW;
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(CX,CY,arcR,boatRad,abattreEnd,abattreCCW);
+  ctx.strokeStyle='#ff4444';ctx.lineWidth=3.5;ctx.lineCap='round';ctx.stroke();
+  const abattreTan=abattreEnd+(abattreCCW?Math.PI/2:-Math.PI/2);
+  const ax=CX+arcR*Math.cos(abattreEnd),ay=CY+arcR*Math.sin(abattreEnd);
+  _arrowHead(ax,ay,abattreTan,asz,'#ff4444');
+  const amid=boatRad-loferSign*spread*1.6;
+  ctx.font=fs;ctx.fillStyle='#ff4444';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('Abattre',CX+(arcR+lrOff)*Math.cos(amid),CY+(arcR+lrOff)*Math.sin(amid));
+  ctx.restore();
+}
+
+function _arrowHead(x,y,angle,size,color){
+  ctx.beginPath();
+  ctx.moveTo(x,y);
+  ctx.lineTo(x-size*Math.cos(angle-0.40),y-size*Math.sin(angle-0.40));
+  ctx.moveTo(x,y);
+  ctx.lineTo(x-size*Math.cos(angle+0.40),y-size*Math.sin(angle+0.40));
+  ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.lineCap='round';ctx.stroke();
+}
+
+// ══════════════════════════════════════════════════════
+// ── AIS ENGINE ────────────────────────────────────────
+// ══════════════════════════════════════════════════════
+const AIS_CHARS='@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_ !"#$%&\'()*+,-./0123456789:;<=>?';
+function aisPayloadBits(payload,fill){const b=[];for(let i=0;i<payload.length;i++){let c=payload.charCodeAt(i)-48;if(c>40)c-=8;for(let k=5;k>=0;k--)b.push((c>>k)&1);}if(fill>0)b.splice(b.length-fill,fill);return b;}
+function aisU(b,s,n){let v=0;for(let i=0;i<n;i++)v=(v<<1)|(b[s+i]||0);return v;}
+function aisI(b,s,n){const v=aisU(b,s,n);return b[s]?v-(1<<n):v;}
+function aisS(b,s,n){let t='';for(let i=0;i<n;i+=6)t+=AIS_CHARS[aisU(b,s+i,6)||0];return t.replace(/@+$/,'').trim();}
+function aisLatLon(val,hem){if(!val||!hem)return null;const v=parseFloat(val);if(isNaN(v))return null;const r=Math.floor(v/100)+(v%100)/60;return(hem==='S'||hem==='W')?-r:r;}
+
+function parseAISSentence(line){
+  if(!line.startsWith('!AIVDM')&&!line.startsWith('!AIVDO'))return;
+  const isOwnShip=line.startsWith('!AIVDO');
+  const p=line.split(',');if(p.length<7)return;
+  const total=parseInt(p[1]),frag=parseInt(p[2]),msgId=p[3]||'',payload=p[5];
+  const fill=parseInt((p[6]||'0').split('*')[0])||0;
+  let fullPay=payload,fullFill=fill;
+  if(total>1){
+    const key='ais_'+msgId;
+    if(frag===1){aisParts.set(key,payload);return;}
+    if(frag===2){const p1=aisParts.get(key);if(!p1)return;fullPay=p1+payload;fullFill=fill;aisParts.delete(key);}
+    else return;
+  }
+  const bits=aisPayloadBits(fullPay,fullFill);
+  if(bits.length<38)return;
+  const type=aisU(bits,0,6),mmsi=String(aisU(bits,8,30)),now=Date.now();
+  // Auto-detect own MMSI from !AIVDO
+  if(isOwnShip&&mmsi&&!ownMMSIauto){ownMMSIauto=mmsi;updateOwnMMSIStatus();}
+  // Skip own vessel
+  const effOwn=ownMMSI||ownMMSIauto;
+  if(effOwn&&mmsi===effOwn){
+    if((type===1||type===2||type===3)&&ownLat===null){
+      const lon=aisI(bits,61,28)/600000,lat=aisI(bits,89,27)/600000;
+      const sog=aisU(bits,50,10)/10,cog=aisU(bits,116,12)/10;
+      if(Math.abs(lat)<90&&Math.abs(lon)<180){ownLat=lat;ownLon=lon;}
+      if(sog<102.3)ownSOG_gps=sog;if(cog<360)ownCOG_gps=cog;updateAISPanel();
+    }
+    return;
+  }
+  let t=aisTargets.get(mmsi)||{mmsi,name:'MMSI '+mmsi,lat:null,lon:null,cog:null,sog:null,hdg:null,lastSeen:now};
+  // Auto-name SART/PLB by MMSI prefix
+  if((mmsi.startsWith('972')||mmsi.startsWith('970'))&&t.name.startsWith('MMSI')){t.name='🆘 AIS-SART '+mmsi.slice(-4);}
+  t.lastSeen=now;
+  if(type===1||type===2||type===3){
+    const sog=aisU(bits,50,10)/10,lon=aisI(bits,61,28)/600000,lat=aisI(bits,89,27)/600000;
+    const cog=aisU(bits,116,12)/10,hdg=aisU(bits,128,9);
+    if(Math.abs(lat)<90&&Math.abs(lon)<180){t.lat=lat;t.lon=lon;}
+    if(sog<102.3)t.sog=sog;if(cog<360)t.cog=cog;if(hdg<511)t.hdg=hdg;
+    aisTargets.set(mmsi,t);checkMOB(t);updateAISPanel();
+  } else if(type===18){
+    if(bits.length<125)return;
+    const sog=aisU(bits,46,10)/10,lon=aisI(bits,57,28)/600000,lat=aisI(bits,85,27)/600000;
+    const cog=aisU(bits,112,12)/10,hdg=aisU(bits,124,9);
+    if(Math.abs(lat)<90&&Math.abs(lon)<180){t.lat=lat;t.lon=lon;}
+    if(sog<102.3)t.sog=sog;if(cog<360)t.cog=cog;if(hdg<511)t.hdg=hdg;
+    aisTargets.set(mmsi,t);checkMOB(t);updateAISPanel();
+  } else if(type===5){
+    if(bits.length>=360){const n=aisS(bits,120,120);if(n)t.name=n;t.callsign=aisS(bits,70,42);}
+    aisTargets.set(mmsi,t);updateAISPanel();
+  } else if(type===24){
+    const part=aisU(bits,38,2);
+    if(part===0&&bits.length>=160){const n=aisS(bits,40,120);if(n)t.name=n;}
+    aisTargets.set(mmsi,t);updateAISPanel();
+  } else if(type===21){
+    if(bits.length>=160){const n=aisS(bits,43,120);if(n)t.name=n;}
+    aisTargets.set(mmsi,t);
+  }
+}
+
+function checkMOB(t){
+  if(!mobMMSI)return;
+  if(t.mmsi!==mobMMSI&&!t.mmsi.startsWith('972')&&!t.mmsi.startsWith('970'))return;
+  const isMOBMMSI=mobMMSI&&t.mmsi===mobMMSI;
+  const isSARTPrefix=!mobMMSI&&(t.mmsi.startsWith('972')||t.mmsi.startsWith('970'));
+  if(!isMOBMMSI&&!isSARTPrefix)return;
+  // Trigger MOB alert
+  mobAlertActive=true;
+  const dist=ownLat!==null&&t.lat!==null?haversineNM(ownLat,ownLon,t.lat,t.lon):null;
+  const banner=document.getElementById('mob-alert-banner');
+  const sub=document.getElementById('mob-banner-sub');
+  const info=document.getElementById('mob-banner-info');
+  if(banner)banner.style.display='flex';
+  if(sub)sub.textContent='Balise '+(t.name||t.mmsi)+' détectée !';
+  if(info)info.textContent='MMSI: '+t.mmsi+(dist?' | Distance: '+dist.toFixed(2)+' NM':'')+' | COG: '+(t.cog!==null?Math.round(t.cog)+'°':'—')+' | SOG: '+(t.sog!==null?t.sog.toFixed(1)+' kts':'—');
+  document.getElementById('mob-mmsi-dot')&&(document.getElementById('mob-mmsi-dot').className='mmsi-dot active');
+}
+
+function applyOwnMMSI(){
+  const v=(document.getElementById('own-mmsi-input').value||'').trim();
+  ownMMSI=/^\d{7,9}$/.test(v)?v:'';
+  updateOwnMMSIStatus();updateAISPanel();
+}
+
+function applyMobMMSI(){
+  const v=(document.getElementById('mob-mmsi-input').value||'').trim();
+  mobMMSI=/^\d{7,9}$/.test(v)?v:'';
+  const dot=document.getElementById('mob-mmsi-dot');
+  const txt=document.getElementById('mob-mmsi-txt');
+  if(dot)dot.className='mmsi-dot'+(mobMMSI?' ok':'');
+  if(txt)txt.textContent=mobMMSI?'✅ MMSI '+mobMMSI+' surveillé':'Non configuré';
+}
+
+function updateOwnMMSIStatus(){
+  const dot=document.getElementById('own-mmsi-dot');
+  const txt=document.getElementById('own-mmsi-txt');
+  const inp=document.getElementById('own-mmsi-input');
+  const manual=inp&&inp.value.trim();
+  if(manual&&/^\d{7,9}$/.test(manual)){
+    if(dot)dot.className='mmsi-dot ok';
+    if(txt)txt.textContent='✅ Exclu manuellement: '+manual;
+  } else if(ownMMSIauto){
+    if(dot)dot.className='mmsi-dot detected';
+    if(txt)txt.textContent='📡 Auto-détecté via AIVDO: '+ownMMSIauto+' (exclu)';
+  } else {
+    if(dot)dot.className='mmsi-dot';
+    if(txt)txt.textContent='Non renseigné — auto-détection en attente (!AIVDO)';
+  }
+}
+
+function clearMOBAlert(){
+  mobAlertActive=false;
+  const banner=document.getElementById('mob-alert-banner');
+  if(banner)banner.style.display='none';
+  const dot=document.getElementById('mob-mmsi-dot');
+  if(dot)dot.className='mmsi-dot'+(mobMMSI?' ok':'');
+}
+
+function simulateMOB(){
+  const mmsi=mobMMSI||'972123456';
+  const fake={mmsi,name:'🆘 TEST MOB',lat:ownLat?ownLat+0.005:48.0,lon:ownLon?ownLon+0.005:-4.0,cog:180,sog:0.2};
+  aisTargets.set(mmsi,{...fake,lastSeen:Date.now()});
+  checkMOB(fake);updateAISPanel();
+}
+
+function haversineNM(la1,lo1,la2,lo2){const R=3440.065,dL=(la2-la1)*Math.PI/180,dO=(lo2-lo1)*Math.PI/180;const a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dO/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
+
+function calcCPATCPA(tgt){
+  if(ownLat===null||ownLon===null||tgt.lat===null||tgt.lon===null)return{dist:null,cpa:null,tcpa:null};
+  const dist=haversineNM(ownLat,ownLon,tgt.lat,tgt.lon);
+  const myS=ownSOG_gps||0,myC=(ownCOG_gps||0)*Math.PI/180;
+  const tgS=tgt.sog||0,tgC=(tgt.cog||0)*Math.PI/180;
+  const mid=(ownLat+tgt.lat)/2*Math.PI/180;
+  const dx=(tgt.lon-ownLon)*60*Math.cos(mid),dy=(tgt.lat-ownLat)*60;
+  const dvx=tgS*Math.sin(tgC)-myS*Math.sin(myC),dvy=tgS*Math.cos(tgC)-myS*Math.cos(myC);
+  const v2=dvx*dvx+dvy*dvy;
+  if(v2<0.0001)return{dist,cpa:dist,tcpa:null};
+  const tcpaH=-(dx*dvx+dy*dvy)/v2;
+  if(tcpaH<0)return{dist,cpa:dist,tcpa:-1};
+  const cpaDx=dx+dvx*tcpaH,cpaDy=dy+dvy*tcpaH;
+  return{dist,cpa:Math.sqrt(cpaDx*cpaDx+cpaDy*cpaDy),tcpa:tcpaH*60};
+}
+
+function toggleAISPanel(){
+  const body=document.getElementById('ais-body');
+  const chev=document.getElementById('ais-chevron');
+  const open=body.style.display==='none';
+  body.style.display=open?'':'none';
+  if(chev)chev.className='ais-chevron-btn'+(open?' open':'');
+}
+
+function updateAISPanel(){
+  const now=Date.now();
+  aisTargets.forEach((v,k)=>{if(now-v.lastSeen>AIS_TIMEOUT)aisTargets.delete(k);});
+  const listEl=document.getElementById('ais-list');
+  const cntEl=document.getElementById('ais-count');
+  const dotEl=document.getElementById('ais-dot');
+  const noGps=document.getElementById('ais-no-gps');
+  const ownPos=document.getElementById('ais-own-pos');
+  const ownPosTxt=document.getElementById('ais-own-pos-txt');
+  if(!listEl)return;
+  // Own position footer
+  if(ownLat!==null&&ownLon!==null){
+    if(noGps)noGps.style.display='none';
+    if(ownPos)ownPos.style.display='flex';
+    if(ownPosTxt)ownPosTxt.textContent=Math.abs(ownLat).toFixed(4)+(ownLat>=0?'°N':'°S')+' / '+Math.abs(ownLon).toFixed(4)+(ownLon>=0?'°E':'°O');
+  } else {
+    if(noGps)noGps.style.display='block';
+    if(ownPos)ownPos.style.display='none';
+  }
+  // Filter targets within 1 NM
+  const vessels=[];
+  aisTargets.forEach(tgt=>{
+    if(tgt.lat===null||tgt.lon===null)return;
+    const r=calcCPATCPA(tgt);
+    if(r.dist===null||r.dist>AIS_DIST_NM)return;
+    vessels.push({...tgt,dist:r.dist,cpa:r.cpa,tcpa:r.tcpa});
+  });
+  vessels.sort((a,b)=>a.dist-b.dist);
+  if(cntEl)cntEl.textContent=vessels.length||'0';
+  const hasAlert=vessels.some(v=>v.cpa<0.3&&v.tcpa!==null&&v.tcpa>0&&v.tcpa<6);
+  const hasWarn=vessels.some(v=>v.cpa<0.5&&v.tcpa!==null&&v.tcpa>0&&v.tcpa<12);
+  if(dotEl)dotEl.className='ais-dot'+(vessels.length?(hasAlert?' alert':' live'):'');
+  if(!vessels.length){
+    listEl.innerHTML='<div class="ais-empty">✅ Aucun trafic AIS &lt; 1 NM<br><span style="font-size:9px;color:#4a6a8a">'+aisTargets.size+' cible(s) hors rayon</span></div>';
+    return;
+  }
+  listEl.innerHTML=vessels.slice(0,7).map(v=>{
+    const isD=v.cpa!==null&&v.cpa<0.3&&v.tcpa!==null&&v.tcpa>0&&v.tcpa<6;
+    const isW=!isD&&v.cpa!==null&&v.cpa<0.5&&v.tcpa!==null&&v.tcpa>0&&v.tcpa<12;
+    const rowCls=isD?'v-danger':isW?'v-warn':'v-ok';
+    const distCls=v.dist<0.3?'dc':v.dist<0.6?'dm':'df';
+    const cpaCls=isD?'c-danger':isW?'c-warn':'c-ok';
+    const cogStr=v.cog!==null?Math.round(v.cog)+'°':'—°';
+    const sogStr=v.sog!==null?v.sog.toFixed(1)+' kts':'—';
+    const cpaStr=v.cpa!==null?v.cpa.toFixed(2)+' NM':'—';
+    const tcpaStr=v.tcpa===null?'—':v.tcpa<0?'↗ Diverge':Math.round(v.tcpa)+' min';
+    const icon=isD?'🔴 ':isW?'🟡 ':'🟢 ';
+    return `<div class="ais-vessel ${rowCls}">
+      <div class="ais-name" title="MMSI: ${v.mmsi}">${icon}${v.name}</div>
+      <div class="ais-dist-badge ${distCls}">${v.dist.toFixed(2)} NM</div>
+      <div class="ais-meta"><span>COG ${cogStr}</span><span>${sogStr}</span></div>
+      <div class="ais-meta"><span class="ais-cpa-tag ${cpaCls}">CPA ${cpaStr} — TCPA ${tcpaStr}</span></div>
+    </div>`;
+  }).join('');
+}
+
+function updateInfo(){
+  const{twa,side}=getTWA();
+  const wd=norm(windDir),bd=norm(boatHdg);
+  document.getElementById('wval').textContent=Math.round(wd)+'°';
+  document.getElementById('wcard').textContent='Vient du '+toCard(wd);
+  document.getElementById('bval').textContent=Math.round(bd)+'°';
+  document.getElementById('bcard').textContent='Cap '+toCard(bd);
+  document.getElementById('wlbl').textContent=wk;
+  document.getElementById('blbl').textContent=bk;
+  // TWA badge
+  const twaD=document.getElementById('twa-display');
+  const twaSide=document.getElementById('twa-side-display');
+  const twaAl=document.getElementById('twa-allure-display');
+  if(twaD){twaD.textContent=twa+'°';}
+  if(twaSide){twaSide.textContent=side;twaSide.className='twa-side '+(side==='Tribord'?'tribord':'babord');}
+  if(twaAl){const s2=getSec(twa);twaAl.textContent=twa<45?'Zone morte':s2.name;twaAl.style.color=s2.color;}
+  updateSrcStatus();
+  updateSailConfig();
+  renderSailPanel();
+}
+
+// Selectors
+document.querySelectorAll('.sel-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const t=btn.dataset.t,k=btn.dataset.k;
+    if(t==='w'){wk=k;document.querySelectorAll('[data-t="w"]').forEach(b=>b.classList.remove('aw'));btn.classList.add('aw');document.getElementById('wd').textContent=WD[k].d;}
+    else{bk=k;document.querySelectorAll('[data-t="b"]').forEach(b=>b.classList.remove('ab'));btn.classList.add('ab');document.getElementById('bd').textContent=BD[k].d;}
+    document.getElementById('topbar-wind-src').textContent=wk;
+    document.getElementById('topbar-boat-src').textContent=bk;
+    draw();updateInfo();
+  });
+});
+
+// Manual drag
+function getAngle(e){
+  const r=cv.getBoundingClientRect(),sx=cv.width/r.width,sy=cv.height/r.height;
+  const ex=e.touches?e.touches[0].clientX:e.clientX,ey=e.touches?e.touches[0].clientY:e.clientY;
+  return r2d(Math.atan2((ey-r.top)*sy-CY,(ex-r.left)*sx-CX))+90;
+}
+function getTarget(e){
+  const r=cv.getBoundingClientRect(),sx=cv.width/r.width,sy=cv.height/r.height;
+  const ex=e.touches?e.touches[0].clientX:e.clientX,ey=e.touches?e.touches[0].clientY:e.clientY;
+  const mx=(ex-r.left)*sx-CX,my=(ey-r.top)*sy-CY,dist=R-R*.06;
+  const dw=(dist*Math.cos(d2r(windDir-90))-mx)**2+(dist*Math.sin(d2r(windDir-90))-my)**2;
+  const db=(dist*Math.cos(d2r(boatHdg-90))-mx)**2+(dist*Math.sin(d2r(boatHdg-90))-my)**2;
+  const thr=(R*.18)**2;if(dw<thr||db<thr)return dw<db?'w':'b';return null;
+}
+cv.addEventListener('mousedown',e=>{drag=getTarget(e);if(drag)lastA=getAngle(e);});
+cv.addEventListener('touchstart',e=>{e.preventDefault();drag=getTarget(e);if(drag)lastA=getAngle(e);},{passive:false});
+window.addEventListener('mousemove',e=>{
+  if(!drag)return;const a=getAngle(e);
+  if(drag==='w'){windDir+=a-lastA;if(windSource==='nmea'){liveWind=false;setWindSource('manual');}else{liveWind=false;}}
+  else{boatHdg+=a-lastA;if(boatSource==='nmea'){liveBoat=false;setBoatSource('manual');}else{liveBoat=false;}}
+  lastA=a;draw();updateInfo();updateLiveBadges();
+});
+window.addEventListener('touchmove',e=>{
+  if(!drag)return;e.preventDefault();const a=getAngle(e);
+  if(drag==='w'){windDir+=a-lastA;if(windSource==='nmea'){liveWind=false;setWindSource('manual');}else{liveWind=false;}}
+  else{boatHdg+=a-lastA;if(boatSource==='nmea'){liveBoat=false;setBoatSource('manual');}else{liveBoat=false;}}
+  lastA=a;draw();updateInfo();updateLiveBadges();
+},{passive:false});
+window.addEventListener('mouseup',()=>drag=null);
+window.addEventListener('touchend',()=>drag=null);
+
+// ══════════════════════════════════════════════
+// ── BAROMÈTRE ──────────────────────────────────
+// ══════════════════════════════════════════════
+let baroHpa=null, baroSource='nmea', liveBaroNmea=false;
+let baroHistory=[];      // [{t:timestamp_ms, v:hPa}, ...]
+let baroSensorObj=null;
+const BARO_HIST_MAX=3600000; // 1h en ms
+const BARO_TREND_WIN=180000; // 3 min en ms
+
+function addBaroReading(hpa){
+  const now=Date.now();
+  baroHpa=Math.round(hpa*10)/10;
+  baroHistory.push({t:now,v:baroHpa});
+  // Purge > 1h
+  baroHistory=baroHistory.filter(e=>now-e.t<BARO_HIST_MAX);
+  updateBaroDisplay();
+  updateLiveBadges();
+}
+
+function getBaroTrend(){
+  if(!baroHpa||baroHistory.length<2)return null;
+  const now=Date.now();
+  // Find reading ~3 min ago (closest to 3 min)
+  const ref3=baroHistory.filter(e=>now-e.t>=BARO_TREND_WIN);
+  if(!ref3.length)return null;
+  const oldest3=ref3[ref3.length-1]; // closest to 3min boundary
+  const delta=baroHpa-oldest3.v;
+  const mins=(now-oldest3.t)/60000;
+  const rate=mins>0?delta/mins:0; // hPa/min
+  // Categorize: per 3 min
+  const d3=delta;
+  if(d3>3)  return{label:'↑↑ Hausse rapide',cls:'rapid-rise',delta:d3,mins:Math.round(mins)};
+  if(d3>0.5)return{label:'↑ Hausse',cls:'rising',delta:d3,mins:Math.round(mins)};
+  if(d3<-3) return{label:'↓↓ Baisse rapide',cls:'rapid-fall',delta:d3,mins:Math.round(mins)};
+  if(d3<-0.5)return{label:'↓ Baisse',cls:'falling',delta:d3,mins:Math.round(mins)};
+  return{label:'→ Stable',cls:'steady',delta:d3,mins:Math.round(mins)};
+}
+
+function updateBaroDisplay(){
+  const valEl=document.getElementById('baro-val');
+  const trendEl=document.getElementById('baro-trend');
+  const mmEl=document.getElementById('baro-minmax');
+  const badge=document.getElementById('baro-live-badge');
+
+  if(!baroHpa){
+    valEl.textContent='— hPa';valEl.className='baro-val';
+    trendEl.textContent='— Tendance 3 min';trendEl.className='baro-trend steady';
+    mmEl.textContent='Min : — hPa | Max : — hPa (dernière heure)';
+    badge.style.display='none';
+    return;
+  }
+
+  valEl.textContent=baroHpa.toFixed(1)+' hPa';
+  badge.style.display='inline-block';
+
+  // Trend
+  const tr=getBaroTrend();
+  if(tr){
+    const sign=tr.delta>0?'+':'';
+    trendEl.textContent=tr.label+' ('+sign+tr.delta.toFixed(1)+' hPa / '+tr.mins+' min)';
+    trendEl.className='baro-trend '+tr.cls;
+    valEl.className='baro-val '+(tr.cls.includes('rise')||tr.cls==='rising'?'rising':tr.cls.includes('fall')||tr.cls==='falling'?'falling':'');
+  } else {
+    trendEl.textContent='→ Stable (données insuffisantes)';
+    trendEl.className='baro-trend steady';
+    valEl.className='baro-val';
+  }
+
+  // Min / Max dernière heure
+  if(baroHistory.length>1){
+    const vals=baroHistory.map(e=>e.v);
+    const mn=Math.min(...vals).toFixed(1),mx=Math.max(...vals).toFixed(1);
+    mmEl.textContent='Min : '+mn+' hPa  |  Max : '+mx+' hPa  (dernière heure)';
+  }
+
+  // Source status badge
+  const st=document.getElementById('baro-src-st');
+  if(baroSource==='nmea'&&liveBaroNmea){st.className='src-status ok';st.textContent='✅ NMEA reçu';}
+  else if(baroSource==='sensor'&&baroSensorObj){st.className='src-status ok';st.textContent='✅ Capteur actif';}
+  else{st.className='src-status wait';st.textContent='⏳ En attente…';}
+}
+
+// ── Baro source ──
+function setBaroSource(src){
+  baroSource=src;
+  const nm=document.getElementById('btn-baro-nmea');
+  const se=document.getElementById('btn-baro-sensor');
+  if(src==='nmea'){
+    nm.style.cssText='background:#6A1B9A;border-color:#6A1B9A;color:#fff';
+    se.className='src-btn';
+    stopBaroSensor();
+    const st=document.getElementById('baro-src-st');
+    st.className='src-status wait';st.textContent=liveBaroNmea?'✅ NMEA reçu':'⏳ En attente NMEA…';
+  } else {
+    nm.style.cssText='';nm.className='src-btn';
+    se.className='src-btn src-active-manual';
+    startBaroSensor();
+  }
+}
+
+// ── Generic Sensor API barometer ──
+function startBaroSensor(){
+  const st=document.getElementById('baro-src-st');
+  if(baroSensorObj){return;} // already running
+  if(!('Barometer' in window)){
+    st.className='src-status err';
+    st.textContent='❌ Capteur non disponible';
+    // Try legacy method (some Android via devicemotion — not standard, skip)
+    return;
+  }
+  try{
+    baroSensorObj=new Barometer({frequency:0.5});
+    baroSensorObj.addEventListener('reading',()=>{
+      if(baroSource!=='sensor')return;
+      // Barometer.pressure is in hPa per W3C spec
+      addBaroReading(baroSensorObj.pressure);
+    });
+    baroSensorObj.addEventListener('error',e=>{
+      st.className='src-status err';
+      st.textContent='❌ '+e.error.name;
+      baroSensorObj=null;
+    });
+    baroSensorObj.start();
+    st.className='src-status ok';st.textContent='✅ Capteur actif';
+  } catch(e){
+    st.className='src-status err';
+    st.textContent='❌ '+(e.message||'Non supporté');
+    baroSensorObj=null;
+  }
+}
+
+function stopBaroSensor(){
+  if(baroSensorObj){try{baroSensorObj.stop();}catch(e){}baroSensorObj=null;}
+}
+
+// ── Wind source ──
+function setWindSource(src){
+  windSource=src;
+  const nm=document.getElementById('btn-w-nmea');
+  const ma=document.getElementById('btn-w-manual');
+  const va=document.getElementById('btn-w-validate');
+  const sl=document.getElementById('wind-slider-row');
+  if(src==='nmea'){
+    nm.className='src-btn src-active-nmea-wind';ma.className='src-btn';
+    va.style.display='inline-block';sl.style.display='none';
+  } else {
+    nm.className='src-btn';ma.className='src-btn src-active-manual';
+    va.style.display='none';sl.style.display='flex';
+    const v=Math.round(norm(windDir));
+    document.getElementById('wind-dir-sl').value=v;
+    document.getElementById('wind-sl-val').textContent=v+'°';
+  }
+  updateSrcStatus();
+}
+function validateWindDir(){
+  const v=Math.round(norm(windDir));
+  document.getElementById('wind-dir-sl').value=v;
+  document.getElementById('wind-sl-val').textContent=v+'°';
+  liveWind=false;setWindSource('manual');updateLiveBadges();draw();updateInfo();
+}
+document.getElementById('wind-dir-sl').addEventListener('input',e=>{
+  if(windSource!=='manual')return;
+  windDir=parseInt(e.target.value);
+  document.getElementById('wind-sl-val').textContent=windDir+'°';
+  liveWind=false;draw();updateInfo();updateLiveBadges();
+});
+
+// ── Boat source ──
+function setBoatSource(src){
+  boatSource=src;
+  const nm=document.getElementById('btn-b-nmea');
+  const ma=document.getElementById('btn-b-manual');
+  const va=document.getElementById('btn-b-validate');
+  const sl=document.getElementById('boat-slider-row');
+  if(src==='nmea'){
+    nm.className='src-btn src-active-nmea-boat';ma.className='src-btn';
+    va.style.display='inline-block';sl.style.display='none';
+  } else {
+    nm.className='src-btn';ma.className='src-btn src-active-manual';
+    va.style.display='none';sl.style.display='flex';
+    const v=Math.round(norm(boatHdg));
+    document.getElementById('boat-hdg-sl').value=v;
+    document.getElementById('boat-sl-val').textContent=v+'°';
+  }
+  updateSrcStatus();
+}
+function validateBoatHdg(){
+  const v=Math.round(norm(boatHdg));
+  document.getElementById('boat-hdg-sl').value=v;
+  document.getElementById('boat-sl-val').textContent=v+'°';
+  liveBoat=false;setBoatSource('manual');updateLiveBadges();draw();updateInfo();
+}
+document.getElementById('boat-hdg-sl').addEventListener('input',e=>{
+  if(boatSource!=='manual')return;
+  boatHdg=parseInt(e.target.value);
+  document.getElementById('boat-sl-val').textContent=boatHdg+'°';
+  liveBoat=false;draw();updateInfo();updateLiveBadges();
+});
+
+function updateSrcStatus(){
+  // Wind status badge
+  const ws=document.getElementById('wind-src-st');
+  if(windSource==='manual'){ws.className='src-status manual';ws.textContent='✋ Manuel';}
+  else if(liveWind){ws.className='src-status ok';ws.textContent='✅ Live';}
+  else{ws.className='src-status wait';ws.textContent='⏳ En attente…';}
+  // Boat status badge
+  const bs=document.getElementById('boat-src-st');
+  if(boatSource==='manual'){bs.className='src-status manual';bs.textContent='✋ Manuel';}
+  else if(liveBoat){bs.className='src-status ok';bs.textContent='✅ Live';}
+  else{bs.className='src-status wait';bs.textContent='⏳ En attente…';}
+}
+
+// ── Nord compas : source manuelle ou capteur ──
+let nordSource='manual';
+let sensorWatchId=null;
+
+function setNordSource(src){
+  nordSource=src;
+  document.getElementById('btn-nord-manual').className='nord-src-btn'+(src==='manual'?' active-manual':'');
+  document.getElementById('btn-nord-sensor').className='nord-src-btn'+(src==='sensor'?' active-sensor':'');
+  document.getElementById('nord-manual-row').style.display=src==='manual'?'flex':'none';
+  document.getElementById('nord-sensor-row').style.display=src==='sensor'?'block':'none';
+  const ss=document.getElementById('sensor-status');
+  if(src==='sensor'){ss.style.display='inline-block';startCompassSensor();}
+  else{ss.style.display='none';stopCompassSensor();}
+}
+
+function setSensorStatus(cls,txt){
+  const ss=document.getElementById('sensor-status');
+  ss.className='sensor-status '+cls;ss.textContent=txt;
+}
+
+function isIOS(){return/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;}
+function isAndroid(){return/Android/.test(navigator.userAgent);}
+
+function startCompassSensor(){
+  setSensorStatus('wait','⏳ Initialisation…');
+  document.getElementById('sensor-alpha-info').textContent='';
+
+  // Sur iOS : HTTPS strictement requis + requestPermission
+  if(isIOS()){
+    const isSecure=location.protocol==='https:'||location.hostname==='localhost';
+    if(!isSecure){
+      setSensorStatus('err','❌ HTTPS requis sur iOS');
+      document.getElementById('sensor-alpha-info').textContent=
+        'Sur iPhone/iPad, Safari exige que la page soit servie en HTTPS pour accéder au magnétomètre.';
+      return;
+    }
+    if(typeof DeviceOrientationEvent.requestPermission==='function'){
+      setSensorStatus('wait','🔐 Autorisation iOS requise…');
+      DeviceOrientationEvent.requestPermission()
+        .then(perm=>{
+          if(perm==='granted'){setSensorStatus('wait','⏳ Permission OK…');listenOrientation();}
+          else{
+            setSensorStatus('err','❌ Permission refusée');
+            document.getElementById('sensor-alpha-info').textContent=
+              'Allez dans Réglages › Safari › Mouvement et orientation pour autoriser.';
+          }
+        })
+        .catch(err=>{setSensorStatus('err','❌ '+err.message);});
+    } else {
+      listenOrientation();
+    }
+    return;
+  }
+
+  // Sur Android (Chrome, Samsung Internet, etc.) : fonctionne en file:// et http://
+  // Pas besoin de HTTPS ni de permission explicite
+  if(typeof DeviceOrientationEvent!=='undefined'){
+    listenOrientation();
+  } else {
+    setSensorStatus('err','❌ Capteur non supporté sur ce navigateur');
+  }
+}
+
+function listenOrientation(){
+  let gotData=false;
+
+  const handler=e=>{
+    const alpha=typeof e.alpha==='number'?e.alpha:null;
+    const compass=typeof e.webkitCompassHeading==='number'?e.webkitCompassHeading:null;
+    const absolute=e.absolute;
+
+    // Construire le heading le plus fiable possible
+    let heading=null;
+    if(compass!==null&&!isNaN(compass)){
+      heading=compass;                          // iOS : direct, calibré
+    } else if(absolute===true&&alpha!==null){
+      heading=(360-alpha)%360;                  // Android absolu : fiable
+    } else if(alpha!==null){
+      heading=(360-alpha)%360;                  // Android relatif : moins précis mais fonctionnel
+    }
+
+    // Debug toujours visible
+    const dbg='α='+(alpha!==null?Math.round(alpha)+'°':'—')+
+              ' compass='+(compass!==null?Math.round(compass)+'°':'—')+
+              ' abs='+absolute+
+              (heading!==null?' → cap='+Math.round(heading)+'°':'');
+    document.getElementById('sensor-alpha-info').textContent=dbg;
+
+    if(heading===null)return;
+
+    if(!gotData){gotData=true;setSensorStatus('ok','✅ Capteur actif');}
+    if(nordSource!=='sensor')return;
+    compassOffset=Math.round(heading)%360;
+    document.getElementById('nord-val').textContent='N = '+compassOffset+'°';
+    draw();
+  };
+
+  window.addEventListener('deviceorientation',handler,true);
+  sensorWatchId=handler;
+
+  setTimeout(()=>{
+    if(!gotData&&nordSource==='sensor'){
+      setSensorStatus('err','⚠️ Aucune donnée reçue');
+      document.getElementById('sensor-alpha-info').textContent=
+        isAndroid()
+          ? 'Vérifiez que le navigateur a accès aux capteurs (Paramètres › Applis › Chrome › Autorisations).'
+          : 'Capteur magnétomètre peut-être absent ou désactivé.';
+    }
+  },4000);
+}
+
+function stopCompassSensor(){
+  if(sensorWatchId){window.removeEventListener('deviceorientation',sensorWatchId,true);sensorWatchId=null;}
+}
+
+function resetNord(){
+  compassOffset=0;
+  document.getElementById('nord-slider').value=0;
+  document.getElementById('nord-val').textContent='N = 0°';
+  draw();
+}
+
+document.getElementById('nord-slider').addEventListener('input',e=>{
+  if(nordSource!=='manual')return;
+  compassOffset=parseInt(e.target.value);
+  document.getElementById('nord-val').textContent='N = '+compassOffset+'°';
+  draw();
+});
+
+// ---- Sail panel data per allure ----
+// Angles conformes au tableau de référence fourni
+const ALLURE_DATA=[
+  {id:'pres',name:'Près',twaRange:[45,60],color:'#90caf9',bg:'rgba(13,71,161,0.25)',
+   reglage:'Voiles très tendues, presque dans l\'axe',
+   voilesByWind:[
+     {maxTws:8,  voiles:['GV pleine','Génois N°1']},
+     {maxTws:15, voiles:['GV pleine','Génois N°1 (110%)']},
+     {maxTws:22, voiles:['GV pleine','Génois N°1 ou N°2']},
+     {maxTws:28, voiles:['GV 1 ris','Génois N°2 ou Solent']},
+     {maxTws:34, voiles:['GV 2 ris','Solent ou Foc N°3']},
+     {maxTws:48, voiles:['GV 2-3 ris','Foc de tempête']},
+     {maxTws:99, voiles:['Tourmentin','Cape sécu']},
+   ]},
+  {id:'bon-plein',name:'Bon plein',twaRange:[60,75],color:'#64b5f6',bg:'rgba(21,95,192,0.22)',
+   reglage:'Voiles légèrement desserrées',
+   voilesByWind:[
+     {maxTws:8,  voiles:['GV pleine','Génois N°1']},
+     {maxTws:15, voiles:['GV pleine','Génois N°1']},
+     {maxTws:22, voiles:['GV pleine','Génois N°1 ou N°2']},
+     {maxTws:28, voiles:['GV 1 ris','Génois N°2']},
+     {maxTws:34, voiles:['GV 1-2 ris','Génois réduit ou Solent']},
+     {maxTws:48, voiles:['GV 2-3 ris','Trinquette']},
+     {maxTws:99, voiles:['Tourmentin','Cape sécu']},
+   ]},
+  {id:'travers',name:'Travers',twaRange:[75,105],color:'#80cbc4',bg:'rgba(0,137,123,0.22)',
+   reglage:'Voiles mi-ouvertes, perpendiculaires',
+   voilesByWind:[
+     {maxTws:8,  voiles:['GV pleine','Gennaker conseillé']},
+     {maxTws:15, voiles:['GV pleine','Gennaker possible']},
+     {maxTws:22, voiles:['GV pleine','Gennaker avec précaution']},
+     {maxTws:28, voiles:['GV 1 ris','Génois N°1','Gennaker à éviter']},
+     {maxTws:34, voiles:['GV 1 ris','Génois N°2']},
+     {maxTws:48, voiles:['GV 1-2 ris','Génois réduit']},
+     {maxTws:99, voiles:['GV 3 ris','Foc tempête']},
+   ]},
+  {id:'largue',name:'Largue',twaRange:[105,140],color:'#ffcc80',bg:'rgba(224,112,32,0.18)',
+   reglage:'Voiles bien ouvertes',
+   voilesByWind:[
+     {maxTws:8,  voiles:['GV pleine','Gennaker ou Spi asym.']},
+     {maxTws:15, voiles:['GV pleine','Gennaker ou Spi asym.']},
+     {maxTws:22, voiles:['GV pleine','Gennaker ou Spi asym.']},
+     {maxTws:28, voiles:['GV pleine','Génois N°1','Spi déconseillé']},
+     {maxTws:34, voiles:['GV 1 ris','Génois N°2','Pas de spi']},
+     {maxTws:48, voiles:['GV 1-2 ris','Foc réduit']},
+     {maxTws:99, voiles:['GV 3 ris','Trinquette']},
+   ]},
+  {id:'grand-largue',name:'Grand largue',twaRange:[140,165],color:'#ff8a65',bg:'rgba(191,54,12,0.22)',
+   reglage:'Voiles très ouvertes',
+   voilesByWind:[
+     {maxTws:8,  voiles:['GV pleine','Spi symétrique','Tangon']},
+     {maxTws:15, voiles:['GV pleine','Spi symétrique','Tangon']},
+     {maxTws:22, voiles:['GV pleine','Spi symétrique','Tangon']},
+     {maxTws:28, voiles:['GV pleine','Spi asym. lesté']},
+     {maxTws:34, voiles:['GV 1 ris','Foc réduit','Spi déconseillé']},
+     {maxTws:48, voiles:['GV 1-2 ris','Foc tempête']},
+     {maxTws:99, voiles:['GV 3 ris + tourmentin','Fuite sécu']},
+   ]},
+];
+
+// SVG diagrams per allure (simplified boat + sails top-view)
+function makeSailSVG(twaAngle,hasSpi){
+  const w=56,h=56,cx=w/2,cy=h*0.55;
+  // Boat hull (simplified arrow pointing up = cap)
+  const boatPath=`M${cx},${cy-16} L${cx+5},${cy+12} L${cx},${cy+7} L${cx-5},${cy+12} Z`;
+  // Wind arrow from top
+  const windRad=(twaAngle-90)*Math.PI/180;
+  const wx=cx+22*Math.cos(windRad),wy=cy+22*Math.sin(windRad);
+  // GV (mainsail) — tight at low angles, eased at high
+  const gvEase=Math.min(twaAngle/180,1);
+  const gvAngle=(twaAngle>90?1:-1)*gvEase*35;
+  const gvRad=gvAngle*Math.PI/180;
+  const gvX=cx+18*Math.sin(gvRad),gvY=cy-18*Math.cos(gvRad);
+  // Foc/Génois
+  const focAngle=gvAngle*0.7;
+  const focRad=focAngle*Math.PI/180;
+  const focX=cx+16*Math.sin(focRad),focY=cy-12-12*Math.cos(focRad);
+  let svgContent=`
+    <line x1="${wx}" y1="${wy}" x2="${cx}" y2="${cy}" stroke="#1565C0" stroke-width="1.5" stroke-dasharray="3,2" marker-end="url(#arr)"/>
+    <polygon points="${boatPath.replace('M','').replace(/ [LZ]/g,',').replace(/,Z/,'')}" fill="#1a2a3a" stroke="#fff" stroke-width="0.8"/>
+    <polygon points="${cx},${cy} ${cx-4},${cy-2} ${gvX},${gvY} ${cx+2},${cy+1}" fill="#E3F2FD" stroke="#1565C0" stroke-width="1" opacity="0.9"/>
+    <polygon points="${cx},${cy-6} ${cx-3},${cy-8} ${focX},${focY} ${cx+2},${cy-5}" fill="#E8F5E9" stroke="#1B6B3A" stroke-width="1" opacity="0.85"/>
+  `;
+  if(hasSpi){
+    const spiX=cx+20*Math.sin((gvAngle*1.4)*Math.PI/180);
+    const spiY=cy-20-8*Math.cos((gvAngle*1.4)*Math.PI/180);
+    svgContent+=`<ellipse cx="${(cx+spiX)/2}" cy="${(cy-10+spiY)/2}" rx="9" ry="7" fill="#FFF9C4" stroke="#F57C00" stroke-width="1" opacity="0.8" transform="rotate(${gvAngle*1.2},${cx},${cy})"/>`;
+  }
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+    <defs><marker id="arr" markerWidth="5" markerHeight="5" refX="5" refY="2.5" orient="auto"><polygon points="0 0,5 2.5,0 5" fill="#1565C0"/></marker></defs>
+    ${svgContent}
+  </svg>`;
+}
+
+function getVoilesForAllure(allureData){
+  for(let w of allureData.voilesByWind){if(tws<=w.maxTws)return w.voiles;}
+  return allureData.voilesByWind[allureData.voilesByWind.length-1].voiles;
+}
+
+function renderSailPanel(){
+  const{twa,side}=getTWA();
+  const el=document.getElementById('sail-panel-content');
+  if(!el)return;
+
+  // Find active allure
+  const active=ALLURE_DATA.find(a=>twa>=a.twaRange[0]&&twa<a.twaRange[1]);
+
+  if(!active){
+    // Zone morte ou vent arrière
+    const isZM=twa<45;
+    el.innerHTML=`<div class="sail-panel-no-allure">
+      ${isZM
+        ?'🚫 <strong style="color:#ff4444">Zone morte</strong><br><span style="font-size:10px;color:var(--txt3)">Virer de bord ou abattre.</span>'
+        :'🔄 <strong style="color:#ff8a65">Vent arrière</strong> — TWA '+twa+'°<br><span style="font-size:10px;color:var(--txt3)">GV pleine + Spi symétrique — voiles complètement libres.</span>'}
+    </div>`;
+    return;
+  }
+
+  const voiles=getVoilesForAllure(active);
+  const hasSpi=voiles.some(v=>v.toLowerCase().includes('spi')||v.toLowerCase().includes('gennaker'));
+  const svgHtml=makeSailSVG((active.twaRange[0]+active.twaRange[1])/2,hasSpi);
+  const tagColors=[
+    {bg:'rgba(45,125,210,0.2)',fg:'#90caf9'},
+    {bg:'rgba(31,173,107,0.18)',fg:'#80cbc4'},
+    {bg:'rgba(224,112,32,0.18)',fg:'#ffcc80'},
+    {bg:'rgba(155,89,182,0.2)',fg:'#ce93d8'},
+    {bg:'rgba(239,83,80,0.18)',fg:'#ef9a9a'}
+  ];
+  const voilesHTML=voiles.map((v,i)=>{
+    const c=tagColors[i%tagColors.length];
+    return`<span class="av-tag" style="background:${c.bg};color:${c.fg};border:1px solid ${c.fg}33;font-size:12px;padding:4px 10px;border-radius:7px;font-weight:700;">${v}</span>`;
+  }).join('');
+
+  const sideColor=side==='Tribord'
+    ? (document.body.classList.contains('light')?'#166534':'#2de88a')
+    : (document.body.classList.contains('light')?'#b71c1c':'#ff4444');
+  const sideBg=side==='Tribord'
+    ? (document.body.classList.contains('light')?'rgba(22,101,52,0.12)':'rgba(45,210,130,0.12)')
+    : (document.body.classList.contains('light')?'rgba(183,28,28,0.12)':'rgba(255,68,68,0.12)');
+
+  el.innerHTML=`
+    <div class="allure-row active" style="background:${active.bg||'rgba(45,125,210,0.12)'};border:1.5px solid ${active.color||'var(--blue)'}40;border-radius:10px;padding:12px 14px;">
+      <div class="allure-row-header" style="margin-bottom:8px;display:flex;align-items:center;gap:10px;">
+        <div style="flex-shrink:0">${svgHtml}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="color:${active.color||'#90caf9'};font-size:22px;font-weight:900;line-height:1.1;">${active.name}</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:5px;flex-wrap:wrap;">
+            <span style="font-size:13px;color:var(--txt3);font-weight:600;">TWA ${twa}°</span>
+            <span style="font-size:20px;font-weight:900;color:${sideColor};background:${sideBg};padding:2px 12px;border-radius:8px;border:2px solid ${sideColor}44;">${side}</span>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:12px;font-style:italic;font-weight:600;color:var(--txt2);background:rgba(255,255,255,0.05);padding:5px 10px;border-radius:6px;margin-bottom:9px;display:block;">
+        ✦ ${active.reglage}
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;">${voilesHTML}</div>
+    </div>`;
+}
+
+function toggleLog(){const el=document.getElementById('log-content');el.style.display=el.style.display==='none'?'block':'none';}
+
+// ── COG + GPS Position ──────────────────────────────
+function resetSTWMinMax(){stwMin=null;stwMax=null;const minEl=document.getElementById('stw-min-val');const maxEl=document.getElementById('stw-max-val');if(minEl)minEl.textContent='—';if(maxEl)maxEl.textContent='—';}
+function updateCOGDisplay(){
+  const el=document.getElementById('cog-val');
+  const card=document.getElementById('cog-card');
+  if(el&&ownCOG_gps!==null){
+    el.textContent=Math.round(ownCOG_gps)+'°';
+    if(card)card.textContent='Cap fond: '+toCard(ownCOG_gps);
+  }
+}
+function updateGPSPosDisplay(){
+  if(ownLat===null||ownLon===null){
+    // Fallback tablette
+    if(navigator.geolocation)navigator.geolocation.getCurrentPosition(p=>{
+      ownLat=p.coords.latitude;ownLon=p.coords.longitude;
+      if(p.coords.speed!=null)ownSOG_gps=p.coords.speed*1.944;
+      if(p.coords.heading!=null)ownCOG_gps=p.coords.heading;
+      updateGPSPosDisplay();
+    },()=>{},{enableHighAccuracy:true,timeout:5000});
+    return;
+  }
+  const fmt=(deg,posL,negL)=>{const a=Math.abs(deg),d=Math.floor(a),m=((a-d)*60);return d+'° '+m.toFixed(3)+"' "+(deg>=0?posL:negL);};
+  const la=document.getElementById('gps-pos-lat');
+  const lo=document.getElementById('gps-pos-lon');
+  const sr=document.getElementById('gps-pos-src');
+  const bg=document.getElementById('gps-pos-badge');
+  if(la)la.textContent=fmt(ownLat,'N','S');
+  if(lo)lo.textContent=fmt(ownLon,'E','O');
+  if(sr)sr.textContent='NMEA'+(ownSOG_gps!=null?' · SOG '+ownSOG_gps.toFixed(1)+' kts':'')+
+      (ownCOG_gps!=null?' · COG '+Math.round(ownCOG_gps)+'°':'');
+  if(bg)bg.style.display='inline-block';
+  // Topbar GPS dot
+  const dot=document.getElementById('topbar-gps-dot');
+  if(dot)dot.className='topbar-gps-dot live';
+  updateCOGDisplay();
+  updateLiveBadges();
+}
+setInterval(()=>{if(ownLat===null)updateGPSPosDisplay();},8000);
+
+// ── Heel Alarm ───────────────────────────────────────
+let _heelSnooze=false,_heelSnoozeT=null,_heelBeepT=null;
+function _playBeep(f,d,t){
+  try{
+    if(!window._iosAC){window._iosAC=new(window.AudioContext||window.webkitAudioContext)();}
+    const ac=window._iosAC;
+    // iOS suspend AudioContext entre les gestes — on le reprend
+    if(ac.state==='suspended')ac.resume();
+    const o=ac.createOscillator(),g=ac.createGain();
+    o.type=t||'sine';o.frequency.value=f;g.gain.setValueAtTime(.3,ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);
+    o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+d);
+  }catch(e){}
+}
+function _heelSound(lvl){
+  if(lvl==='urgence'){for(let i=0;i<5;i++)setTimeout(()=>_playBeep(880+i*50,.15,'square'),i*110);}
+  else if(lvl==='danger'){_playBeep(660,.5,'sawtooth');}
+  else{_playBeep(440,.1,'sine');}
+}
+function checkHeelAlarm(){
+  const bn=document.getElementById('heel-alarm-banner');
+  if(!bn||heelDeg===null||_heelSnooze){if(bn)bn.style.display='none';return;}
+  const abs=Math.abs(heelDeg);
+  if(abs<15){bn.style.display='none';if(_heelBeepT){clearInterval(_heelBeepT);_heelBeepT=null;}return;}
+  let lvl,icon,title,sub,ms;
+  if(abs>=25){lvl='urgence';icon='🆘';title='URGENCE — GÎTE CRITIQUE '+abs.toFixed(1)+'°';
+    sub='Ris dans la grand-voile, enlever le génois ou abattre !';ms=1800;}
+  else if(abs>=20){lvl='danger';icon='🔴';title='DANGER — GÎTE EXCESSIVE '+abs.toFixed(1)+'°';
+    sub='Réduire immédiatement la voilure — prendre un ris, choquer les écoutes.';ms=3000;}
+  else{lvl='attention';icon='⚠️';title='ATTENTION — GÎTE FORTE '+abs.toFixed(1)+'°';
+    sub='Vérifier les réglages des voiles (trop de toile ?) ou la répartition des charges.';ms=6000;}
+  bn.className='heel-alarm-banner lvl-'+lvl;bn.style.display='flex';
+  const gi=document.getElementById('heel-alarm-icon'),
+        ti=document.getElementById('heel-alarm-title'),
+        si=document.getElementById('heel-alarm-sub');
+  if(gi)gi.textContent=icon;if(ti)ti.textContent=title;if(si)si.textContent=sub;
+  if(!_heelBeepT){_heelSound(lvl);_heelBeepT=setInterval(()=>{
+    if(heelDeg!=null&&Math.abs(heelDeg)>=15&&!_heelSnooze)_heelSound(lvl);
+    else{clearInterval(_heelBeepT);_heelBeepT=null;}
+  },ms);}
+}
+function snoozeHeelAlarm(){
+  _heelSnooze=true;
+  document.getElementById('heel-alarm-banner').style.display='none';
+  if(_heelBeepT){clearInterval(_heelBeepT);_heelBeepT=null;}
+  if(_heelSnoozeT)clearTimeout(_heelSnoozeT);
+  _heelSnoozeT=setTimeout(()=>{_heelSnooze=false;checkHeelAlarm();},120000);
+}
+// ══════════════════════════════════════════════════════
+// ── MARÉES — Calcul harmonique ─────────────────────────
+// ══════════════════════════════════════════════════════
+const PORTS={
+  larochelle:{name:'La Rochelle',lat:46.16,lon:-1.15,Z0:3.60,
+    c:[{n:'M2',H:2.415,g:138.5},{n:'S2',H:0.840,g:175.2},{n:'N2',H:0.477,g:119.8},
+       {n:'K1',H:0.128,g:346.1},{n:'O1',H:0.107,g:314.7},{n:'K2',H:0.232,g:175.8},
+       {n:'M4',H:0.147,g:29.4},{n:'MS4',H:0.095,g:79.8}]},
+  brest:{name:'Brest',lat:48.38,lon:-4.49,Z0:3.60,
+    c:[{n:'M2',H:2.360,g:97.4},{n:'S2',H:0.804,g:133.0},{n:'N2',H:0.468,g:78.0},
+       {n:'K1',H:0.122,g:315.0},{n:'O1',H:0.100,g:282.0},{n:'K2',H:0.220,g:133.6},
+       {n:'M4',H:0.068,g:250.0}]},
+  cherbourg:{name:'Cherbourg',lat:49.65,lon:-1.62,Z0:3.70,
+    c:[{n:'M2',H:1.610,g:37.0},{n:'S2',H:0.590,g:79.0},{n:'N2',H:0.310,g:17.0},
+       {n:'K1',H:0.112,g:265.0},{n:'O1',H:0.082,g:238.0},{n:'K2',H:0.159,g:80.0}]},
+  stmalo:{name:'Saint-Malo',lat:48.64,lon:-2.01,Z0:6.65,
+    c:[{n:'M2',H:3.800,g:72.0},{n:'S2',H:1.330,g:113.0},{n:'N2',H:0.780,g:52.0},
+       {n:'K1',H:0.135,g:305.0},{n:'O1',H:0.110,g:274.0},{n:'K2',H:0.360,g:114.0},
+       {n:'M4',H:0.210,g:218.0},{n:'MS4',H:0.145,g:270.0}]},
+  lorient:{name:'Lorient',lat:47.75,lon:-3.36,Z0:3.00,
+    c:[{n:'M2',H:1.850,g:112.0},{n:'S2',H:0.640,g:149.0},{n:'N2',H:0.372,g:92.0},
+       {n:'K1',H:0.118,g:327.0},{n:'O1',H:0.098,g:296.0},{n:'K2',H:0.174,g:150.0}]},
+  lesables:{name:"Les Sables-d'Olonne",lat:46.50,lon:-1.79,Z0:3.40,
+    c:[{n:'M2',H:2.170,g:127.0},{n:'S2',H:0.753,g:163.0},{n:'N2',H:0.432,g:107.0},
+       {n:'K1',H:0.121,g:337.0},{n:'O1',H:0.101,g:305.0},{n:'K2',H:0.204,g:163.5}]},
+  bordeaux:{name:'Bordeaux (Pauillac)',lat:45.20,lon:-0.75,Z0:3.00,
+    c:[{n:'M2',H:1.700,g:156.0},{n:'S2',H:0.580,g:195.0},{n:'N2',H:0.330,g:134.0},
+       {n:'K1',H:0.100,g:5.0},{n:'O1',H:0.085,g:334.0},{n:'K2',H:0.157,g:196.0}]},
+  bayonne:{name:'Bayonne',lat:43.50,lon:-1.47,Z0:2.65,
+    c:[{n:'M2',H:1.590,g:152.0},{n:'S2',H:0.556,g:191.0},{n:'N2',H:0.315,g:130.0},
+       {n:'K1',H:0.099,g:3.0},{n:'O1',H:0.083,g:332.0},{n:'K2',H:0.151,g:192.0}]},
+  marseille:{name:'Marseille',lat:43.30,lon:5.37,Z0:0.25,
+    c:[{n:'M2',H:0.075,g:60.0},{n:'S2',H:0.055,g:95.0},{n:'K1',H:0.040,g:50.0},
+       {n:'O1',H:0.025,g:20.0}]},
+  nice:{name:'Nice',lat:43.70,lon:7.27,Z0:0.20,
+    c:[{n:'M2',H:0.060,g:75.0},{n:'S2',H:0.040,g:110.0},{n:'K1',H:0.035,g:60.0},
+       {n:'O1',H:0.020,g:30.0}]},
+  calais:{name:'Calais',lat:50.97,lon:1.85,Z0:4.60,
+    c:[{n:'M2',H:2.210,g:350.0},{n:'S2',H:0.803,g:29.0},{n:'N2',H:0.411,g:327.0},
+       {n:'K1',H:0.107,g:254.0},{n:'O1',H:0.072,g:218.0},{n:'K2',H:0.218,g:30.0},
+       {n:'M4',H:0.145,g:90.0}]},
+  dunkerque:{name:'Dunkerque',lat:51.04,lon:2.37,Z0:3.30,
+    c:[{n:'M2',H:1.820,g:0.5},{n:'S2',H:0.662,g:39.0},{n:'N2',H:0.335,g:337.0},
+       {n:'K1',H:0.100,g:258.0},{n:'O1',H:0.068,g:222.0},{n:'K2',H:0.180,g:40.0}]}
+};
+const SPEED={M2:28.9841,S2:30.0,N2:28.4397,K2:30.0821,K1:15.0411,O1:13.9430,
+             P1:14.9589,M4:57.9682,MS4:58.9841};
+const EPOCH_2024=new Date(Date.UTC(2024,0,1,0,0,0)).getTime();
+const EPOCH_PH={M2:117.7,S2:0.0,N2:18.4,K2:145.2,K1:276.6,O1:82.9,
+                P1:350.1,M4:235.4,MS4:117.7};
+
+function tideHeight(pk,dt){
+  const p=PORTS[pk];if(!p)return null;
+  const hrs=(dt.getTime()-EPOCH_2024)/3600000;
+  let h=p.Z0;
+  p.c.forEach(ct=>{
+    const om=SPEED[ct.n]||0;
+    const ph=((EPOCH_PH[ct.n]||0)+om*hrs-ct.g)*Math.PI/180;
+    h+=ct.H*Math.cos(ph);
+  });
+  return Math.max(0,Math.round(h*100)/100);
+}
+function tideTrend(pk,dt){
+  const h0=tideHeight(pk,new Date(dt.getTime()-600000));
+  const h1=tideHeight(pk,new Date(dt.getTime()+600000));
+  if(h1>h0+0.01)return{icon:'📈',txt:'Montante ↑',dir:1};
+  if(h1<h0-0.01)return{icon:'📉',txt:'Descendante ↓',dir:-1};
+  return{icon:'〰️',txt:'Étale',dir:0};
+}
+let _mareePort='larochelle';
+function nearestPort(lat,lon){
+  let best='larochelle',bestD=Infinity;
+  Object.entries(PORTS).forEach(([k,p])=>{
+    const d=Math.hypot(p.lat-lat,p.lon-lon);
+    if(d<bestD){bestD=d;best=k;}
+  });
+  return bestD<3?best:'larochelle';
+}
+function onPortChange(){const s=document.getElementById('maree-port-select');if(s){_mareePort=s.value;updateMareeDisplay();}}
+function updateMareeDisplay(){
+  const now=new Date();const p=PORTS[_mareePort];if(!p)return;
+  const pn=document.getElementById('maree-port-name');if(pn)pn.textContent=p.name;
+  const hNow=tideHeight(_mareePort,now);
+  const tr=tideTrend(_mareePort,now);
+  const nv=document.getElementById('maree-now-val');const ti=document.getElementById('maree-trend-icon');const ph=document.getElementById('maree-phase-txt');
+  if(nv)nv.textContent=hNow.toFixed(2);if(ti)ti.textContent=tr.icon;if(ph)ph.textContent=tr.txt;
+  const offs=[{s:'Maintenant',m:0},{s:'+30mn',m:30},{s:'+1H',m:60},{s:'+2H',m:120},{s:'+3H',m:180},{s:'+6H',m:360},{s:'+12H',m:720}];
+  const vals=offs.map(o=>({...o,h:tideHeight(_mareePort,new Date(now.getTime()+o.m*60000))}));
+  const maxH=Math.max(...vals.map(v=>v.h)),minH=Math.min(...vals.map(v=>v.h));
+  const rng=Math.max(maxH-minH,0.3);
+  const bars=document.getElementById('maree-bars');
+  if(bars)bars.innerHTML=vals.map((v,i)=>{
+    const pct=Math.round(((v.h-minH)/rng)*80+12);
+    return`<div class="maree-bar-col">
+      <div class="maree-bar-val">${v.h.toFixed(2)}</div>
+      <div class="maree-bar-wrap"><div class="maree-bar ${i===0?'now':'future'}" style="height:${pct}%;"></div></div>
+      <div class="maree-bar-lbl">${v.s}</div>
+    </div>`;}).join('');
+  const cells=document.getElementById('maree-cells');
+  if(cells)cells.innerHTML=vals.map((v,i)=>{
+    const t=tideTrend(_mareePort,new Date(now.getTime()+v.m*60000));
+    return`<div class="maree-cell${i===0?' now-cell':''}">
+      <div class="maree-cell-lbl">${v.s}</div>
+      <div class="maree-cell-val">${v.h.toFixed(2)} m</div>
+      <div class="maree-cell-trend">${t.dir>0?'↑':t.dir<0?'↓':'—'}</div>
+    </div>`;}).join('');
+}
+function initMareeFromGPS(){
+  const run=(lat,lon)=>{_mareePort=nearestPort(lat,lon);const s=document.getElementById('maree-port-select');if(s)s.value=_mareePort;updateMareeDisplay();};
+  if(ownLat!==null&&ownLon!==null){run(ownLat,ownLon);}
+  else if(navigator.geolocation){navigator.geolocation.getCurrentPosition(p=>run(p.coords.latitude,p.coords.longitude),()=>updateMareeDisplay(),{timeout:5000});}
+  else{updateMareeDisplay();}
+}
+setInterval(updateMareeDisplay,60000);
+
+window.addEventListener('resize',resize);
+if(window.visualViewport)window.visualViewport.addEventListener('resize',resize);
+resize();
+applyTheme();
+updateSrcStatus();
+updateBaroDisplay();
+updateSpeedDisplay();
+updateEngineDisplay();
+initMareeFromGPS();
+</script>
+</body></html>
